@@ -21,6 +21,29 @@ try:
 except ImportError:
     feedparser = None
 
+import urllib.request
+
+UA = "Mozilla/5.0 (compatible; DefenseBrief/1.0; +https://github.com)"
+
+
+def _read(url, timeout=25):
+    """Fetch bytes ourselves so we can set a UA and repair malformed XML.
+    Many feeds (Substack, several .gov) emit stray control characters that
+    feedparser's strict parser rejects outright, returning zero entries."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read()
+    except Exception:
+        return None
+
+
+def _scrub(data):
+    """Strip control characters that are illegal in XML 1.0."""
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "ignore")
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
+
 STOP = {
     "the","a","an","and","or","of","to","in","for","on","with","at","by","from","as","is","are",
     "be","was","were","will","would","new","says","say","said","after","over","its","it","that",
@@ -92,7 +115,10 @@ def fetch(sources, limit_per_feed=40, log=print):
     items, errors = [], []
     for s in sources:
         try:
-            d = feedparser.parse(s["url"])
+            raw_bytes = _read(s["url"])
+            d = feedparser.parse(raw_bytes if raw_bytes else s["url"])
+            if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
+                d = feedparser.parse(_scrub(raw_bytes))
             if getattr(d, "bozo", 0) and not d.entries:
                 errors.append({"source": s["name"], "error": str(getattr(d, "bozo_exception", "parse error"))})
                 log(f"  ! {s['name']}: no entries ({getattr(d,'bozo_exception','')})")
