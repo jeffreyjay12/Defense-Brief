@@ -337,6 +337,7 @@ def score_cluster(c, cfg, now=None):
 
     return {
         "score": round(total, 2),
+        "score_raw": round(total + pen, 2),
         "why": why,
         "n_sources": distinct,
         "is_analysis": is_analysis,
@@ -384,6 +385,7 @@ def build_digest(items, cfg, now=None):
             continue
         lead = max(c["items"], key=lambda x: x["weight"])
         out.append({
+            "id": slug(lead["link"] or lead["title"]),
             "title": lead["title"],
             "link": lead["link"],
             "summary": lead["summary"][:300],
