@@ -19,9 +19,15 @@ header{position:sticky;top:0;z-index:10;background:var(--bg);
   border-bottom:1px solid var(--line);padding:14px 16px 10px}
 h1{margin:0;font-size:17px;letter-spacing:-.01em}
 .meta{color:var(--dim);font-size:12px;margin-top:3px;font-family:var(--mono)}
-.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+.wrap{max-width:1440px;margin:0 auto;padding:0 16px}
+/* On wide screens use the space for a second column of cards rather than
+   stretching summary lines, which hurts readability. */
+.items{display:grid;grid-template-columns:1fr;gap:9px;align-items:start}
+@media (min-width:1080px){ .items{grid-template-columns:1fr 1fr} }
+@media (min-width:1500px){ .items{grid-template-columns:1fr 1fr 1fr} }
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
 @media (max-width:700px){ .panels{grid-template-columns:1fr} }
+.panel{min-width:0}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
 .panel h2{margin:0 0 9px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;
   color:var(--dim);display:flex;justify-content:space-between}
@@ -42,7 +48,7 @@ section{margin:22px 0}
 .sh h2{margin:0;font-size:15px;letter-spacing:-.01em}
 .sh .n{color:var(--dim);font-size:12px;font-family:var(--mono)}
 .item{background:var(--card);border:1px solid var(--line);border-radius:12px;
-  padding:12px 14px;margin-bottom:9px}
+  padding:12px 14px}
 .item a{color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;
   display:block;margin-bottom:5px}
 .item a:active{opacity:.6}
@@ -67,7 +73,8 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
   margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 """
 
-SECTION_ORDER = ["triad", "dib", "budget", "primes", "tech", "nuclear_energy", "deals", "thinktank"]
+SECTION_ORDER = ["triad", "dib", "contracts", "budget", "primes", "deals",
+                 "tech", "cyber", "nuclear_energy", "global", "thinktank"]
 
 
 def esc(s):
@@ -166,6 +173,7 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
         tail = [r for r in rows if r not in heads][:disp["max_tail_per_section"]]
 
         parts.append(f'<section><div class="sh"><h2>{esc(label)}</h2><span class="n">{len(rows)}</span></div>')
+        parts.append('<div class="items">')
         for r in heads:
             tags = []
             if r["id"] in new_ids:
@@ -184,6 +192,7 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             parts.append(
                 f'<div class="item"><a href="{esc(r["link"])}" target="_blank" rel="noopener">{esc(r["title"])}</a>'
                 f'{gloss}<div class="tags">{"".join(tags)}</div></div>')
+        parts.append('</div>')
         if tail:
             parts.append(f'<details class="tail"><summary>{len(tail)} more</summary>')
             for r in tail:

@@ -60,7 +60,23 @@
       "icbm",
       "warhead",
       "energetics",
-      "qualification"
+      "qualification",
+      "cyber",
+      "cybersecurity",
+      "quantum",
+      "encryption",
+      "electronic warfare",
+      "spectrum",
+      "satellite",
+      "space force",
+      "shipyard",
+      "shipbuilding",
+      "castings",
+      "forging",
+      "foundry",
+      "allied",
+      "nato",
+      "export control"
     ]
   },
   "magnitude": {
@@ -352,7 +368,21 @@
         "welders",
         "trade school",
         "hiring pipeline",
-        "talent pipeline"
+        "talent pipeline",
+        "shipyard",
+        "shipbuilding capacity",
+        "submarine maintenance",
+        "depot",
+        "sustainment",
+        "castings maker",
+        "engine castings",
+        "precision products",
+        "mining technology",
+        "domestic mining",
+        "critical minerals",
+        "industrial capacity",
+        "manufacturing base",
+        "tooling"
       ]
     },
     "budget": {
@@ -362,24 +392,22 @@
         "budget request",
         "appropriations",
         "ndaa",
-        "authorization",
+        "authorization act",
         "continuing resolution",
         "fydp",
+        "reconciliation",
         "acquisition reform",
-        "gao",
-        "cbo",
         "cost overrun",
         "nunn-mccurdy",
         "program of record",
         "milestone b",
-        "far ",
+        "milestone c",
         "procurement policy",
-        "contracting",
+        "contracting policy",
         "reprogramming",
         "acquisition baseline",
         "selected acquisition report",
         "acquisition cost",
-        "acquisition profile",
         "program baseline",
         "divest",
         "divestment",
@@ -390,26 +418,19 @@
         "transfer authority",
         "rapid acquisition",
         "acquisition authority",
-        "acquisition manual",
         "other transaction",
         "middle tier",
-        "program executive"
+        "oversight",
+        "gao found",
+        "comptroller",
+        "funding shift",
+        "appropriators"
       ]
     },
     "primes": {
       "label": "Primes",
       "priority": 4,
       "terms": [
-        "lockheed",
-        "northrop",
-        "rtx",
-        "raytheon",
-        "boeing",
-        "general dynamics",
-        "l3harris",
-        "bae systems",
-        "huntington ingalls",
-        "leidos",
         "earnings",
         "earnings guidance",
         "full-year guidance",
@@ -427,7 +448,12 @@
         "shares fell",
         "revenue growth",
         "operating margin",
-        "book-to-bill"
+        "book-to-bill",
+        "investor day",
+        "dividend",
+        "buyback",
+        "spin off",
+        "segment results"
       ]
     },
     "tech": {
@@ -560,6 +586,86 @@
         "testimony",
         "white paper"
       ]
+    },
+    "contracts": {
+      "label": "Contracts & Awards",
+      "priority": 3,
+      "terms": [
+        "awarded",
+        "awards",
+        "wins contract",
+        "contract award",
+        "undefinitized",
+        "task order",
+        "delivery order",
+        "idiq",
+        "indefinite delivery",
+        "full-rate production",
+        "low-rate initial",
+        "lrip",
+        "production contract",
+        "modification",
+        "option exercised",
+        "sole-source award",
+        "competition",
+        "down-select",
+        "demo phase",
+        "full rate production deal",
+        "ceiling"
+      ]
+    },
+    "global": {
+      "label": "Global & Allied",
+      "priority": 6,
+      "terms": [
+        "ukraine",
+        "nato",
+        "allied",
+        "allies",
+        "europe",
+        "european",
+        "india",
+        "japan",
+        "korea",
+        "taiwan",
+        "australia",
+        "aukus",
+        "israel",
+        "iran",
+        "saudi",
+        "houthi",
+        "germany",
+        "german",
+        "france",
+        "french",
+        "united kingdom",
+        "poland",
+        "canada",
+        "foreign military sale",
+        "fms",
+        "export",
+        "co-production",
+        "partner nation",
+        "indo-pacific",
+        "middle east"
+      ]
+    },
+    "cyber": {
+      "label": "Cyber & Information",
+      "priority": 7,
+      "terms": [
+        "cyber",
+        "cybersecurity",
+        "offensive cyber",
+        "zero trust",
+        "encryption",
+        "quantum",
+        "post-quantum",
+        "network defense",
+        "information operations",
+        "electronic warfare",
+        "spectrum"
+      ]
     }
   },
   "recency": {
@@ -647,7 +753,24 @@
       "inside the pentagon",
       "daily digest",
       "weekly digest",
-      "news briefs"
+      "news briefs",
+      "business brief",
+      "business briefing",
+      "what we're watching",
+      "watching for at",
+      "week ahead",
+      "podcast",
+      "interview with"
+    ],
+    "summary_terms": [
+      "[sponsored]",
+      "sponsored content",
+      "this is the tenth article",
+      "limited series celebrating"
     ]
+  },
+  "routing": {
+    "_comment": "tier1_triad_bonus: points added to the triad section when a tier-1 entity (Sentinel, Columbia, Trident, W87, Pantex, KCNSC...) appears. Program and site names should beat generic event language like 'milestone b' or 'contract award'. Lower it if triad starts absorbing stories that merely mention a program in passing.",
+    "tier1_triad_bonus": 8
   }
 }

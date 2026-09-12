@@ -221,8 +221,11 @@ def gate(items, cfg):
         # but they live under predictable URL paths, which does.
         link_l = (it.get("link") or "").lower()
         title_l = it["title"].lower()
+        summ_l = (it.get("summary") or "").lower()
+        rej_summ = [t.lower() for t in rej.get("summary_terms", [])]
         hit = next((p for p in rej_url if p in link_l), None) or \
-              next((t for t in rej_title if t in title_l), None)
+              next((t for t in rej_title if t in title_l), None) or \
+              next((t for t in rej_summ if t in summ_l), None)
         if hit:
             filtered.append({"title": it["title"], "source": it["source"],
                              "link": it["link"], "reason": f"reject: {hit}"})
@@ -405,29 +408,41 @@ def score_cluster(c, cfg, now=None):
 
 
 def route(c, cfg):
-    """Assign exactly one section: highest term-match score, ties to lower priority number."""
+    """Assign exactly one section: highest term-match score, ties to lower priority.
+
+    Program and site names outrank event language. Specificity weighting alone
+    scored "milestone b" (2 words) above "sentinel" (1 word), so Sentinel,
+    Columbia and Trident stories drained out of the triad section into budget
+    whenever they mentioned a procurement milestone. The tier-1 entity list IS
+    the triad and weapons complex, so a tier-1 hit claims the story outright.
+    """
     blob = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
     hint = set()
     for i in c["items"]:
         hint |= set(i.get("hint") or [])
+
+    ent = cfg["entities"]
+    tier1_hits = hits(blob, ent["tier1"])
+    program_bonus = cfg.get("routing", {}).get("tier1_triad_bonus", 8)
+
     best, best_key = None, None
     for key, sconf in cfg["sections"].items():
         if key.startswith("_") or not isinstance(sconf, dict):
             continue
         h = hits(blob, sconf["terms"])
-        # Weight by specificity: multi-word terms are far stronger evidence than
-        # single generic words. Without this, "capacity" (which appears in
-        # "generation capacity", "military capacity", etc.) routed nuclear and
-        # geopolitics stories into the industrial-base section.
         sc = sum(len(t.split()) ** 2 for t in h) + (1 if key in hint else 0)
+        if key == "triad" and tier1_hits:
+            sc += program_bonus + (len(tier1_hits) - 1)
         if sc == 0:
             continue
         cand = (sc, -sconf["priority"])
         if best is None or cand > best:
             best, best_key = cand, key
     if best_key is None:
-        # analysis with no term match still belongs somewhere
-        best_key = "thinktank" if all(i["kind"] == "analysis" for i in c["items"]) else "budget"
+        # Never default to budget: that turned it into a dump for geopolitics,
+        # cyber and anything else unmatched. Unmatched analysis is research;
+        # unmatched news goes to the lowest-priority general section.
+        best_key = "thinktank"
     return best_key
 
 
