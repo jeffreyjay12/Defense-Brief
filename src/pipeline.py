@@ -15,55 +15,13 @@ Design notes:
 """
 import json, re, math, hashlib, datetime as dt
 from collections import defaultdict
-from html import entities as html_entities
+from html import entities as html_entities, unescape as html_unescape
+import urllib.request
 
 try:
     import feedparser
 except ImportError:
     feedparser = None
-
-import urllib.request
-
-UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
-
-def _read(url, timeout=25, log=None):
-    """Fetch bytes ourselves so we can set a UA and repair malformed XML."""
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            data = r.read()
-        if log:
-            log(f"      _read ok: {len(data)} bytes, ctype={r.headers.get('Content-Type','?')}")
-        return data
-    except Exception as ex:
-        if log:
-            log(f"      _read FAILED: {type(ex).__name__}: {str(ex)[:90]}")
-        return None
-
-XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
-
-def _scrub(data):
-    """Repair feeds that are valid HTML but invalid XML.
-
-    The common killer is named HTML entities (&nbsp; &mdash; &rsquo;). XML
-    predefines only amp/lt/gt/quot/apos; everything else is an undefined
-    entity and aborts the parse, discarding every item after that point.
-    """
-    if isinstance(data, bytes):
-        data = data.decode("utf-8", "ignore")
-    data = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
-
-    def _ent(m):
-        name = m.group(1)
-        if name in XML_PREDEFINED:
-            return m.group(0)
-        cp = html_entities.name2codepoint.get(name)
-        return f"&#{cp};" if cp else ""
-
-    data = re.sub(r"&([a-zA-Z][a-zA-Z0-9]{0,31});", _ent, data)
-    data = re.sub(r"&(?!(?:#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;))", "&amp;", data)
-    return data
 
 STOP = {
     "the","a","an","and","or","of","to","in","for","on","with","at","by","from","as","is","are",
@@ -82,8 +40,20 @@ def slug(s):
 
 
 def tokens(title):
+    """Title tokens, plus a canonical token for any dollar figure.
+
+    "$50 billion" and "$50B" are the same fact but tokenize differently, so
+    three reports of one award failed to cluster. Emitting usd50000000000 for
+    both gives them a rare shared token - and dollar figures are the strongest
+    same-story signal available, since unrelated coverage of the same company
+    rarely cites an identical amount.
+    """
     t = re.sub(r"[^a-z0-9 ]", " ", (title or "").lower())
-    return {w for w in t.split() if len(w) > 2 and w not in STOP}
+    tk = {w for w in t.split() if len(w) > 2 and w not in STOP}
+    usd = parse_dollars(title)
+    if usd >= 1e6:
+        tk.add(f"usd{int(usd)}")
+    return tk
 
 
 def parse_dollars(text):
@@ -105,6 +75,50 @@ def parse_dollars(text):
     return best
 
 
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+
+XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
+
+
+def _read(url, timeout=25, log=None):
+    """Fetch bytes ourselves so we can set a browser UA and repair the XML."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = r.read()
+        if log:
+            log(f"      _read ok: {len(data)} bytes, ctype={r.headers.get('Content-Type','?')}")
+        return data
+    except Exception as ex:
+        if log:
+            log(f"      _read FAILED: {type(ex).__name__}: {str(ex)[:90]}")
+        return None
+
+
+def _scrub(data):
+    """Repair feeds that are valid HTML but invalid XML.
+
+    The usual killer is named HTML entities (&nbsp; &mdash; &rsquo;). XML
+    predefines only amp/lt/gt/quot/apos; anything else is an undefined entity
+    and aborts the parse, discarding every item after that point.
+    """
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "ignore")
+    data = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
+
+    def _ent(m):
+        name = m.group(1)
+        if name in XML_PREDEFINED:
+            return m.group(0)
+        cp = html_entities.name2codepoint.get(name)
+        return f"&#{cp};" if cp else ""
+
+    data = re.sub(r"&([a-zA-Z][a-zA-Z0-9]{0,31});", _ent, data)
+    data = re.sub(r"&(?!(?:#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;))", "&amp;", data)
+    return data
+
+
 def first_para(html_text, maxlen=400):
     """Extract the lede paragraph from an HTML body.
 
@@ -116,10 +130,13 @@ def first_para(html_text, maxlen=400):
     body = re.sub(r"(?is)<script.*?</script>|<style.*?</style>", " ", html_text or "")
     for para in re.findall(r"(?is)<p[^>]*>(.*?)</p>", body):
         txt = re.sub(r"<[^>]+>", " ", para)
+        # Decode entities AFTER stripping tags: feeds carry &#8220; &amp; &nbsp;
+        # which otherwise survive as literal text and get re-escaped on render.
+        txt = html_unescape(txt)
         txt = re.sub(r"\s+", " ", txt).strip()
         if len(txt) > 60:
             return txt[:maxlen]
-    txt = re.sub(r"<[^>]+>", " ", body)
+    txt = html_unescape(re.sub(r"<[^>]+>", " ", body))
     return re.sub(r"\s+", " ", txt).strip()[:maxlen]
 
 
@@ -144,13 +161,17 @@ def fetch(sources, limit_per_feed=40, log=print):
                 log(f"      after scrub: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
                 errors.append({"source": s["name"], "error": str(getattr(d, "bozo_exception", "parse error"))})
-                log(f"  ! {s['name']}: no entries ({getattr(d, 'bozo_exception', '')})")
+                log(f"  ! {s['name']}: no entries ({getattr(d,'bozo_exception','')})")
                 continue
             n = 0
             for e in d.entries[:limit_per_feed]:
                 title = norm(getattr(e, "title", ""))
                 if not title:
                     continue
+                # Newsletter tables-of-contents ("Inside the Navy - Sept 14",
+                # "INSIDER daily digest") carry no content of their own, just links
+                # to that week's articles. Left in, they absorb the real stories
+                # during clustering and score on a dozen headlines at once.
                 if re.search(r"(?i)\b(inside the (navy|army|air force|pentagon)|"
                              r"daily digest|weekly digest|news briefs?)\b", title):
                     continue
@@ -177,7 +198,7 @@ def fetch(sources, limit_per_feed=40, log=print):
                 })
                 n += 1
             log(f"  + {s['name']}: {n}")
-        except Exception as ex:
+        except Exception as ex:  # noqa: BLE001
             errors.append({"source": s["name"], "error": str(ex)})
             log(f"  ! {s['name']}: {ex}")
     return items, errors
@@ -187,18 +208,33 @@ def fetch(sources, limit_per_feed=40, log=print):
 def gate(items, cfg):
     g = cfg["gate"]
     ent = cfg["entities"]
+    rej = cfg.get("reject", {})
+    rej_url = [p.lower() for p in rej.get("url_patterns", [])]
+    rej_title = [t.lower() for t in rej.get("title_terms", [])]
     # An entity name is itself proof of being in-domain. Without this, items
     # like "Sentinel ICBM clears Milestone B" fail the generic keyword gate.
     terms = list(g["terms"]) + ent["tier1"] + ent["tier2"] + ent["tier3"]
     kept, filtered = [], []
     for it in items:
+        # Hard rejects first. Human-interest features legitimately contain
+        # "Army", "Airman", "National Guard", so no keyword gate excludes them -
+        # but they live under predictable URL paths, which does.
+        link_l = (it.get("link") or "").lower()
+        title_l = it["title"].lower()
+        hit = next((p for p in rej_url if p in link_l), None) or \
+              next((t for t in rej_title if t in title_l), None)
+        if hit:
+            filtered.append({"title": it["title"], "source": it["source"],
+                             "link": it["link"], "reason": f"reject: {hit}"})
+            continue
         blob = f"{it['title']} {it['summary']}"
         h = hits(blob, terms)
         if len(h) >= g.get("min_terms", 1):
             it["_gate_hits"] = h[:6]
             kept.append(it)
         else:
-            filtered.append({"title": it["title"], "source": it["source"], "link": it["link"]})
+            filtered.append({"title": it["title"], "source": it["source"],
+                             "link": it["link"], "reason": "no domain terms"})
     return kept, filtered
 
 
@@ -206,16 +242,31 @@ def gate(items, cfg):
 def cluster(items, min_shared=3, overlap=0.40, tight_overlap=0.50):
     """Group near-duplicate stories across sources.
 
-    Uses the overlap coefficient (intersection / smaller set) rather than
-    Jaccard: headlines for the same story vary a lot in length and phrasing
-    ("Army awards Lockheed $50 billion PAC-3 contract" vs "Lockheed lands
-    $50B Army deal"), and Jaccard punishes that variation hard enough that
-    real duplicates never merge - which silently kills the corroboration
-    signal the whole ranking depends on.
+    Similarity is inverse-frequency weighted: a token shared by many headlines
+    in the batch ("lockheed", "missile", "defense") is weak evidence, while a
+    rare one ("pac-3", "sentinel", "palisades") is strong. Plain token counting
+    falsely merged "Army awards Lockheed $50B PAC-3 contract" into "Lockheed
+    raises full-year guidance" - they share lockheed/martin/missile/year - which
+    silently DELETED the award story. False merges lose news; false splits only
+    cost a corroboration bonus, so this errs toward splitting.
     """
+    import math
+    docs = [(it, tokens(it["title"])) for it in
+            sorted(items, key=lambda x: x["published"], reverse=True)]
+    n = max(len(docs), 1)
+    df = defaultdict(int)
+    for _, tk in docs:
+        for t in tk:
+            df[t] += 1
+    idf = {t: math.log(1 + n / c) for t, c in df.items()}
+
+    USD_WEIGHT = 3.0   # supporting evidence only - see the guard below
+
+    def weight(ts):
+        return sum(USD_WEIGHT if t.startswith("usd") else idf.get(t, 1.0) for t in ts)
+
     clusters = []
-    for it in sorted(items, key=lambda x: x["published"], reverse=True):
-        tk = tokens(it["title"])
+    for it, tk in docs:
         if not tk:
             clusters.append({"items": [it], "tokens": tk, "seed": tk})
             continue
@@ -223,11 +274,16 @@ def cluster(items, min_shared=3, overlap=0.40, tight_overlap=0.50):
         for c in clusters:
             seed = c["seed"] or c["tokens"]
             inter = tk & seed
-            if not inter:
+            # A shared dollar figure boosts similarity but must never create a
+            # match on its own: Boeing's $50B tanker and Lockheed's $50B PAC-3
+            # award share an amount and nothing else. Count only real words
+            # toward the threshold; let the amount raise the score.
+            inter_words = {t for t in inter if not t.startswith("usd")}
+            if len(inter_words) < 2:
                 continue
-            ov = len(inter) / max(min(len(tk), len(seed)), 1)
-            if (len(inter) >= min_shared and ov >= overlap) or \
-               (len(inter) >= 2 and ov >= tight_overlap):
+            denom = min(weight(tk), weight(seed)) or 1.0
+            ov = weight(inter) / denom
+            if len(inter_words) >= min_shared and ov >= overlap:
                 c["items"].append(it)
                 c["tokens"] |= tk
                 placed = True
@@ -337,6 +393,7 @@ def score_cluster(c, cfg, now=None):
 
     return {
         "score": round(total, 2),
+        "score_raw": round(total + pen, 2),   # pre-decay: what the weekly panel ranks on
         "why": why,
         "n_sources": distinct,
         "is_analysis": is_analysis,
@@ -358,7 +415,11 @@ def route(c, cfg):
         if key.startswith("_") or not isinstance(sconf, dict):
             continue
         h = hits(blob, sconf["terms"])
-        sc = len(h) * 2 + (1 if key in hint else 0)
+        # Weight by specificity: multi-word terms are far stronger evidence than
+        # single generic words. Without this, "capacity" (which appears in
+        # "generation capacity", "military capacity", etc.) routed nuclear and
+        # geopolitics stories into the industrial-base section.
+        sc = sum(len(t.split()) ** 2 for t in h) + (1 if key in hint else 0)
         if sc == 0:
             continue
         cand = (sc, -sconf["priority"])
@@ -384,6 +445,7 @@ def build_digest(items, cfg, now=None):
             continue
         lead = max(c["items"], key=lambda x: x["weight"])
         out.append({
+            "id": slug(lead["link"] or lead["title"]),
             "title": lead["title"],
             "link": lead["link"],
             "summary": lead["summary"][:300],

@@ -74,6 +74,22 @@ def esc(s):
     return html.escape(s or "", quote=True)
 
 
+def clip(s, n):
+    """Truncate on a word boundary with an ellipsis.
+
+    Hard character truncation ended summaries mid-word ("...U.S. la"), which
+    reads as a rendering fault rather than a deliberate excerpt.
+    """
+    s = (s or "").strip()
+    if len(s) <= n:
+        return s
+    cut = s[:n]
+    sp = cut.rfind(" ")
+    if sp > n * 0.6:
+        cut = cut[:sp]
+    return cut.rstrip(" ,.;:-\u2014\u2013") + "\u2026"
+
+
 def summarize(digest, cfg):
     """Deterministic 'what changed' - top scoring items, one line each."""
     top = [d for d in digest if d["score"] >= cfg["display"]["headline_threshold"]][:4]
@@ -164,7 +180,7 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             if r["usd"] >= 1e8:
                 tags.append(f'<span class="tag hot">${r["usd"]/1e9:.1f}B</span>' if r["usd"] >= 1e9
                             else f'<span class="tag hot">${r["usd"]/1e6:.0f}M</span>')
-            gloss = f'<p class="gloss">{esc(r["summary"][:190])}</p>' if r["summary"] else ""
+            gloss = f'<p class="gloss">{esc(clip(r["summary"], 210))}</p>' if r["summary"] else ""
             parts.append(
                 f'<div class="item"><a href="{esc(r["link"])}" target="_blank" rel="noopener">{esc(r["title"])}</a>'
                 f'{gloss}<div class="tags">{"".join(tags)}</div></div>')
