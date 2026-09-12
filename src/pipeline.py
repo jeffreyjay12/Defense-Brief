@@ -117,21 +117,24 @@ def fetch(sources, limit_per_feed=40, log=print):
         raise RuntimeError("feedparser not installed")
     items, errors = [], []
     for s in sources:
-                try:
+        try:
             raw_bytes = _read(s["url"], log=log)
             d = feedparser.parse(raw_bytes if raw_bytes else s["url"])
             if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
-                log(f"      strict parse failed, trying scrub...")
+                log("      strict parse failed, trying scrub...")
                 d = feedparser.parse(_scrub(raw_bytes))
                 log(f"      after scrub: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
                 errors.append({"source": s["name"], "error": str(getattr(d, "bozo_exception", "parse error"))})
-                log(f"  ! {s['name']}: no entries ({getattr(d,'bozo_exception','')})")
+                log(f"  ! {s['name']}: no entries ({getattr(d, 'bozo_exception', '')})")
                 continue
             n = 0
             for e in d.entries[:limit_per_feed]:
                 title = norm(getattr(e, "title", ""))
                 if not title:
+                    continue
+                if re.search(r"(?i)\b(inside the (navy|army|air force|pentagon)|"
+                             r"daily digest|weekly digest|news briefs?)\b", title):
                     continue
                 link = getattr(e, "link", "") or ""
                 summary = first_para(getattr(e, "summary", "") or getattr(e, "description", "") or "")
@@ -156,7 +159,7 @@ def fetch(sources, limit_per_feed=40, log=print):
                 })
                 n += 1
             log(f"  + {s['name']}: {n}")
-        except Exception as ex:  # noqa: BLE001
+        except Exception as ex:
             errors.append({"source": s["name"], "error": str(ex)})
             log(f"  ! {s['name']}: {ex}")
     return items, errors
