@@ -1,0 +1,253 @@
+{
+  "_comment": "Edit freely. kind: 'news' (subject to corroboration scoring) or 'analysis' (exempt, persists longer). weight: source credibility multiplier 0.5-1.5. sections: hint only - the router still decides, but a hint nudges ties.",
+  "sources": [
+    {
+      "name": "Breaking Defense",
+      "url": "https://breakingdefense.com/feed/",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "primes",
+        "budget",
+        "tech"
+      ]
+    },
+    {
+      "name": "Defense News",
+      "url": "https://www.defensenews.com/arc/outboundfeeds/rss/?outputType=xml",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "primes",
+        "budget"
+      ]
+    },
+    {
+      "name": "Defense One",
+      "url": "https://www.defenseone.com/rss/all/",
+      "kind": "news",
+      "weight": 1.1,
+      "hint": [
+        "budget",
+        "tech"
+      ]
+    },
+    {
+      "name": "DefenseScoop",
+      "url": "https://defensescoop.com/feed/",
+      "kind": "news",
+      "weight": 1.0,
+      "hint": [
+        "tech"
+      ]
+    },
+    {
+      "name": "National Defense (NDIA)",
+      "url": "https://www.nationaldefensemagazine.org/rss",
+      "kind": "news",
+      "weight": 1.1,
+      "hint": [
+        "dib"
+      ]
+    },
+    {
+      "name": "War on the Rocks",
+      "url": "https://warontherocks.com/feed/",
+      "kind": "analysis",
+      "weight": 1.0,
+      "hint": [
+        "thinktank"
+      ]
+    },
+    {
+      "name": "DoD Releases",
+      "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=20",
+      "kind": "news",
+      "weight": 1.3,
+      "hint": [
+        "budget",
+        "primes"
+      ]
+    },
+    {
+      "name": "DoD Contracts",
+      "url": "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=800&Site=945&max=20",
+      "kind": "news",
+      "weight": 1.3,
+      "hint": [
+        "dib",
+        "primes"
+      ]
+    },
+    {
+      "name": "NNSA",
+      "url": "https://www.energy.gov/nnsa/listings/nnsa-press-releases/feed",
+      "kind": "news",
+      "weight": 1.3,
+      "hint": [
+        "triad"
+      ]
+    },
+    {
+      "name": "DOE Newsroom",
+      "url": "https://www.energy.gov/rss/articles.xml",
+      "kind": "news",
+      "weight": 1.1,
+      "hint": [
+        "nuclear_energy"
+      ]
+    },
+    {
+      "name": "STRATCOM",
+      "url": "https://www.stratcom.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=100&max=20",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "triad"
+      ]
+    },
+    {
+      "name": "AFGSC",
+      "url": "https://www.afgsc.af.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1010&max=20",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "triad"
+      ]
+    },
+    {
+      "name": "GAO Reports",
+      "url": "https://www.gao.gov/rss/reports.xml",
+      "kind": "analysis",
+      "weight": 1.3,
+      "hint": [
+        "budget",
+        "thinktank"
+      ]
+    },
+    {
+      "name": "World Nuclear News",
+      "url": "https://world-nuclear-news.org/rss",
+      "kind": "news",
+      "weight": 1.0,
+      "hint": [
+        "nuclear_energy"
+      ]
+    },
+    {
+      "name": "ANS Nuclear Newswire",
+      "url": "https://www.ans.org/news/rss/",
+      "kind": "news",
+      "weight": 1.0,
+      "hint": [
+        "nuclear_energy"
+      ]
+    },
+    {
+      "name": "Utility Dive",
+      "url": "https://www.utilitydive.com/feeds/news/",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "nuclear_energy"
+      ]
+    },
+    {
+      "name": "Industrial Base Alpha",
+      "url": "https://industrialbasealpha.substack.com/feed",
+      "kind": "analysis",
+      "weight": 1.4,
+      "hint": [
+        "dib",
+        "deals"
+      ]
+    },
+    {
+      "name": "Defense Tech & Acquisition",
+      "url": "https://defensetechandacquisition.substack.com/feed",
+      "kind": "analysis",
+      "weight": 1.2,
+      "hint": [
+        "tech",
+        "budget"
+      ]
+    },
+    {
+      "name": "CSIS",
+      "url": "https://www.csis.org/analysis/feed",
+      "kind": "analysis",
+      "weight": 1.2,
+      "hint": [
+        "thinktank"
+      ]
+    },
+    {
+      "name": "RAND",
+      "url": "https://www.rand.org/topics/national-security.xml",
+      "kind": "analysis",
+      "weight": 1.1,
+      "hint": [
+        "thinktank"
+      ]
+    },
+    {
+      "name": "Hudson Institute",
+      "url": "https://www.hudson.org/rss.xml",
+      "kind": "analysis",
+      "weight": 1.0,
+      "hint": [
+        "thinktank"
+      ]
+    },
+    {
+      "name": "FAS",
+      "url": "https://fas.org/feed/",
+      "kind": "analysis",
+      "weight": 1.0,
+      "hint": [
+        "thinktank",
+        "triad"
+      ]
+    },
+    {
+      "name": "WSJ Business",
+      "url": "https://feeds.a.dj.com/rss/RSSWSJD.xml",
+      "kind": "news",
+      "weight": 1.3,
+      "hint": [
+        "primes",
+        "deals"
+      ]
+    },
+    {
+      "name": "WSJ Markets",
+      "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "deals"
+      ]
+    },
+    {
+      "name": "Reuters Aerospace",
+      "url": "https://www.reuters.com/business/aerospace-defense/rss",
+      "kind": "news",
+      "weight": 1.2,
+      "hint": [
+        "primes",
+        "deals"
+      ]
+    },
+    {
+      "name": "Inside Defense INSIDER",
+      "url": "https://insidedefense.com/rss.xml",
+      "kind": "news",
+      "weight": 1.35,
+      "hint": [
+        "budget",
+        "dib"
+      ],
+      "note": "VERIFIED full-content feed (Sept 2026): carries complete article bodies, daily-news, INSIDER, newsletters AND document postings with direct PDF links. No email ingestion needed."
+    }
+  ]
+}
