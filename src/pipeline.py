@@ -15,11 +15,55 @@ Design notes:
 """
 import json, re, math, hashlib, datetime as dt
 from collections import defaultdict
+from html import entities as html_entities
 
 try:
     import feedparser
 except ImportError:
     feedparser = None
+
+import urllib.request
+
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+
+def _read(url, timeout=25, log=None):
+    """Fetch bytes ourselves so we can set a UA and repair malformed XML."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = r.read()
+        if log:
+            log(f"      _read ok: {len(data)} bytes, ctype={r.headers.get('Content-Type','?')}")
+        return data
+    except Exception as ex:
+        if log:
+            log(f"      _read FAILED: {type(ex).__name__}: {str(ex)[:90]}")
+        return None
+
+XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
+
+def _scrub(data):
+    """Repair feeds that are valid HTML but invalid XML.
+
+    The common killer is named HTML entities (&nbsp; &mdash; &rsquo;). XML
+    predefines only amp/lt/gt/quot/apos; everything else is an undefined
+    entity and aborts the parse, discarding every item after that point.
+    """
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "ignore")
+    data = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
+
+    def _ent(m):
+        name = m.group(1)
+        if name in XML_PREDEFINED:
+            return m.group(0)
+        cp = html_entities.name2codepoint.get(name)
+        return f"&#{cp};" if cp else ""
+
+    data = re.sub(r"&([a-zA-Z][a-zA-Z0-9]{0,31});", _ent, data)
+    data = re.sub(r"&(?!(?:#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;))", "&amp;", data)
+    return data
 
 STOP = {
     "the","a","an","and","or","of","to","in","for","on","with","at","by","from","as","is","are",
@@ -92,15 +136,23 @@ def fetch(sources, limit_per_feed=40, log=print):
     items, errors = [], []
     for s in sources:
         try:
-            d = feedparser.parse(s["url"])
+            raw_bytes = _read(s["url"], log=log)
+            d = feedparser.parse(raw_bytes if raw_bytes else s["url"])
+            if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
+                log("      strict parse failed, trying scrub...")
+                d = feedparser.parse(_scrub(raw_bytes))
+                log(f"      after scrub: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
                 errors.append({"source": s["name"], "error": str(getattr(d, "bozo_exception", "parse error"))})
-                log(f"  ! {s['name']}: no entries ({getattr(d,'bozo_exception','')})")
+                log(f"  ! {s['name']}: no entries ({getattr(d, 'bozo_exception', '')})")
                 continue
             n = 0
             for e in d.entries[:limit_per_feed]:
                 title = norm(getattr(e, "title", ""))
                 if not title:
+                    continue
+                if re.search(r"(?i)\b(inside the (navy|army|air force|pentagon)|"
+                             r"daily digest|weekly digest|news briefs?)\b", title):
                     continue
                 link = getattr(e, "link", "") or ""
                 summary = first_para(getattr(e, "summary", "") or getattr(e, "description", "") or "")
@@ -125,7 +177,7 @@ def fetch(sources, limit_per_feed=40, log=print):
                 })
                 n += 1
             log(f"  + {s['name']}: {n}")
-        except Exception as ex:  # noqa: BLE001
+        except Exception as ex:
             errors.append({"source": s["name"], "error": str(ex)})
             log(f"  ! {s['name']}: {ex}")
     return items, errors

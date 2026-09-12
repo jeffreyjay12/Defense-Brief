@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["config/**", "src/**", "build.py"]
+    paths: ["config/**", "src/**", "build.py", "requirements.txt"]
 
 permissions:
   contents: read
