@@ -48,7 +48,7 @@
       "weight": 1.1,
       "hint": [
         "dib"
-      ]
+      ], "note": "FAILING Sept 2026 - malformed XML, unresolved"
     },
     {
       "name": "War on the Rocks",
@@ -86,7 +86,7 @@
       "weight": 1.3,
       "hint": [
         "triad"
-      ]
+      ], "note": "FAILING Sept 2026 - malformed XML, unresolved"
     },
     {
       "name": "DOE Newsroom",
@@ -141,7 +141,7 @@
       "weight": 1.0,
       "hint": [
         "nuclear_energy"
-      ]
+      ], "note": "FAILING Sept 2026 - malformed XML, unresolved"
     },
     {
       "name": "Utility Dive",
@@ -160,7 +160,7 @@
       "hint": [
         "dib",
         "deals"
-      ]
+      ], "note": "FAILING Sept 2026 - malformed XML, unresolved"
     },
     {
       "name": "Defense Tech & Acquisition",
@@ -170,7 +170,7 @@
       "hint": [
         "tech",
         "budget"
-      ]
+      ], "note": "FAILING Sept 2026 - HTTP 403, Substack blocks automated fetch"
     },
     {
       "name": "CSIS",
@@ -179,7 +179,7 @@
       "weight": 1.2,
       "hint": [
         "thinktank"
-      ]
+      ], "note": "FAILING Sept 2026 - HTTP 404, feed URL unknown"
     },
     {
       "name": "RAND",
