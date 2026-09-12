@@ -229,8 +229,8 @@
       ]
     },
     {
-      "name": "Reuters Aerospace",
-      "url": "https://www.reuters.com/business/aerospace-defense/rss",
+      "name": "Defense Daily",
+      "url": "https://www.defensedaily.com/feed/",
       "kind": "news",
       "weight": 1.2,
       "hint": [
