@@ -5,7 +5,7 @@ CSS = """
 :root{
   --bg:#0f1216; --card:#171b21; --card2:#1d222a; --line:#262c36;
   --ink:#e8ecf1; --dim:#98a2b3; --accent:#5b8def; --hot:#e8894a;
-  --dib:#7bc48a; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --dib:#7bc48a; --new:#e8894a; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: light){
   :root{ --bg:#f6f7f9; --card:#fff; --card2:#f0f2f5; --line:#e2e6ec;
@@ -19,7 +19,18 @@ header{position:sticky;top:0;z-index:10;background:var(--bg);
   border-bottom:1px solid var(--line);padding:14px 16px 10px}
 h1{margin:0;font-size:17px;letter-spacing:-.01em}
 .meta{color:var(--dim);font-size:12px;margin-top:3px;font-family:var(--mono)}
-.wrap{max-width:820px;margin:0 auto;padding:0 16px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media (max-width:700px){ .panels{grid-template-columns:1fr} }
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.panel h2{margin:0 0 9px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--dim);display:flex;justify-content:space-between}
+.panel h2 span{text-transform:none;letter-spacing:0;font-family:var(--mono);font-size:10.5px}
+.panel ol{margin:0;padding-left:17px}
+.panel li{margin:6px 0;font-size:14px;line-height:1.38}
+.panel a{color:var(--ink);text-decoration:none}
+.panel .lbl{color:var(--dim);font-size:11px;font-family:var(--mono)}
+.panel .empty{color:var(--dim);font-size:13px;font-style:italic}
 .changed{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:14px 16px;margin:16px 0}
 .changed h2{margin:0 0 8px;font-size:12px;text-transform:uppercase;
@@ -42,6 +53,7 @@ section{margin:22px 0}
 .tag.hot{color:var(--hot);border-color:var(--hot)}
 .tag.dib{color:var(--dib);border-color:var(--dib)}
 .tag.an{color:var(--accent);border-color:var(--accent)}
+.tag.new{color:var(--new);border-color:var(--new);font-weight:700}
 details.tail{margin-top:8px}
 details.tail summary{cursor:pointer;color:var(--dim);font-size:12.5px;
   font-family:var(--mono);padding:7px 2px;list-style:none}
@@ -74,9 +86,10 @@ def summarize(digest, cfg):
     return lines
 
 
-def render(digest, cfg, errors=None, generated=None, ai_summary=None):
+def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=None):
     generated = generated or dt.datetime.now(dt.timezone.utc)
     disp = cfg["display"]
+    new_ids = set(new_ids or [])
     by_sec = {k: [] for k in SECTION_ORDER}
     for d in digest:
         by_sec.setdefault(d["section"], []).append(d)
@@ -93,11 +106,38 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None):
 <div class="meta">{generated.strftime('%a %d %b %Y &middot; %H:%M UTC')} &middot; {len(digest)} stories</div>
 </div></header><div class="wrap">"""]
 
-    lines = ai_summary or summarize(digest, cfg)
-    if lines:
-        parts.append('<div class="changed"><h2>What changed</h2><ul>')
-        parts += [f"<li>{l}</li>" for l in lines]
-        parts.append("</ul></div>")
+    def _panel_items(rows):
+        out = []
+        for d in rows:
+            label = cfg["sections"][d["section"]]["label"]
+            age = d.get("age_days", 0)
+            when = "today" if age < 1 else f"{int(age)}d ago"
+            out.append(f'<li><a href="{esc(d["link"])}" target="_blank" rel="noopener">'
+                       f'{esc(d["title"])}</a><br><span class="lbl">{esc(label)} &middot; {when}</span></li>')
+        return "<ol>" + "".join(out) + "</ol>"
+
+    parts.append('<div class="panels">')
+
+    # LEFT - delta since the previous build
+    parts.append('<div class="panel"><h2>What changed <span>since last update</span></h2>')
+    if ai_summary:
+        parts.append("<ol>" + "".join(f"<li>{l}</li>" for l in ai_summary) + "</ol>")
+    else:
+        fresh = [d for d in digest if d["id"] in new_ids][:5]
+        if fresh:
+            parts.append(_panel_items(fresh))
+        elif new_ids:
+            parts.append('<p class="empty">Nothing new since the last build.</p>')
+        else:
+            parts.append(_panel_items(digest[:4]))
+    parts.append("</div>")
+
+    # RIGHT - biggest of the week on pre-decay magnitude, so Monday's big story
+    # still reads as big on Friday instead of being buried by freshness.
+    week = sorted(digest, key=lambda x: x.get("score_raw", x["score"]), reverse=True)[:5]
+    parts.append('<div class="panel"><h2>Top stories <span>past 7 days</span></h2>')
+    parts.append(_panel_items(week) if week else '<p class="empty">No stories in window.</p>')
+    parts.append("</div></div>")
 
     for key in SECTION_ORDER:
         rows = by_sec.get(key) or []
@@ -111,7 +151,10 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None):
 
         parts.append(f'<section><div class="sh"><h2>{esc(label)}</h2><span class="n">{len(rows)}</span></div>')
         for r in heads:
-            tags = [f'<span class="tag">{esc(r["lead_source"])}</span>']
+            tags = []
+            if r["id"] in new_ids:
+                tags.append('<span class="tag new">NEW</span>')
+            tags.append(f'<span class="tag">{esc(r["lead_source"])}</span>')
             if r["n_sources"] > 1:
                 tags.append(f'<span class="tag hot">{r["n_sources"]} sources</span>')
             if r["dib"]:
@@ -128,14 +171,16 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None):
         if tail:
             parts.append(f'<details class="tail"><summary>{len(tail)} more</summary>')
             for r in tail:
+                mark = ' <span class="tag new">NEW</span>' if r["id"] in new_ids else ""
                 parts.append(
                     f'<div class="tailitem"><a href="{esc(r["link"])}" target="_blank" rel="noopener">{esc(r["title"])}</a> '
-                    f'<span class="src">{esc(r["lead_source"])}</span></div>')
+                    f'<span class="src">{esc(r["lead_source"])}</span>{mark}</div>')
             parts.append("</details>")
         parts.append("</section>")
 
     err = f" &middot; {len(errors)} feed errors" if errors else ""
-    parts.append(f'<footer>Generated {generated.strftime("%Y-%m-%d %H:%M UTC")}{err}<br>'
+    parts.append(f'<footer>Generated {generated.strftime("%Y-%m-%d %H:%M UTC")}{err}'
+                 f' &middot; {len(new_ids)} new since last build<br>'
                  f'Headlines and links only. Paywalled sources open on the publisher site.</footer>')
     parts.append("</div></body></html>")
     return "".join(parts)

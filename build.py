@@ -27,6 +27,36 @@ def load(p):
         return json.load(f)
 
 
+def previous_ids():
+    """IDs from the last published build, so 'what changed' is a real delta.
+
+    The previous digest.json is already sitting on the live Pages site, so we
+    read it back rather than persisting state in the repo or the Actions cache.
+    Falls back to a local copy, then to empty (first run) - never fatal.
+    """
+    import urllib.request
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo and "/" in repo:
+        owner, name = repo.split("/", 1)
+        url = f"https://{owner}.github.io/{name}/digest.json"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "DefenseBrief"})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                prev = json.loads(r.read())
+            ids = {d.get("id") for d in prev if d.get("id")}
+            print(f"previous digest: {len(ids)} items from {url}")
+            return ids
+        except Exception as ex:
+            print(f"previous digest unavailable ({type(ex).__name__}) - treating as first run")
+    local = DATA / "digest_prev.json"
+    if local.exists():
+        try:
+            return {d.get("id") for d in load(local) if d.get("id")}
+        except Exception:
+            pass
+    return set()
+
+
 def ai_summary(digest, cfg):
     """Optional: 3-4 line written summary via Claude. Silent no-op without a key."""
     key = os.environ.get("ANTHROPIC_API_KEY")
@@ -82,11 +112,13 @@ def main():
         raw, errors = fetch(sources)
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
 
+    prev_ids = previous_ids()
     digest, filtered = build_digest(raw, cfg)
+    new_ids = {d["id"] for d in digest if d["id"] not in prev_ids} if prev_ids else set()
     (DATA / "digest.json").write_text(json.dumps(digest, indent=1))
     (DATA / "filtered.json").write_text(json.dumps(filtered, indent=1))
 
-    print(f"\n{len(raw)} fetched -> {len(digest)} scored, {len(filtered)} gated out")
+    print(f"\n{len(raw)} fetched -> {len(digest)} scored, {len(filtered)} gated out, {len(new_ids)} new")
     by = {}
     for d in digest:
         by[d["section"]] = by.get(d["section"], 0) + 1
@@ -103,11 +135,12 @@ def main():
         return
 
     summary = ai_summary(digest, cfg)
-    html = render(digest, cfg, errors=errors, ai_summary=summary)
+    html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids)
     (PUB / "index.html").write_text(html)
     (PUB / "manifest.json").write_text(MANIFEST)
     (PUB / "icon.svg").write_text(ICON)
     (PUB / "digest.json").write_text(json.dumps(digest, indent=1))
+    (DATA / "digest_prev.json").write_text(json.dumps(digest, indent=1))
     print(f"\nwrote {PUB/'index.html'} ({len(html)//1024} KB)")
     if errors:
         print(f"feed errors: {len(errors)}")
