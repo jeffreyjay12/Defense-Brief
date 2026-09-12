@@ -117,8 +117,8 @@ def fetch(sources, limit_per_feed=40, log=print):
         raise RuntimeError("feedparser not installed")
     items, errors = [], []
     for s in sources:
-        try:
-           raw_bytes = _read(s["url"], log=log)
+                try:
+            raw_bytes = _read(s["url"], log=log)
             d = feedparser.parse(raw_bytes if raw_bytes else s["url"])
             if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
                 log(f"      strict parse failed, trying scrub...")
