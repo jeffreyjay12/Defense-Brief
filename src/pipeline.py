@@ -15,6 +15,7 @@ Design notes:
 """
 import json, re, math, hashlib, datetime as dt
 from collections import defaultdict
+from html import entities as html_entities
 
 try:
     import feedparser
@@ -23,8 +24,8 @@ except ImportError:
 
 import urllib.request
 
-UA = "Mozilla/5.0 (compatible; DefenseBrief/1.0; +https://github.com)"
-
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
 
 def _read(url, timeout=25, log=None):
     """Fetch bytes ourselves so we can set a UA and repair malformed XML."""
@@ -40,12 +41,29 @@ def _read(url, timeout=25, log=None):
             log(f"      _read FAILED: {type(ex).__name__}: {str(ex)[:90]}")
         return None
 
+XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
 
 def _scrub(data):
-    """Strip control characters that are illegal in XML 1.0."""
+    """Repair feeds that are valid HTML but invalid XML.
+
+    The common killer is named HTML entities (&nbsp; &mdash; &rsquo;). XML
+    predefines only amp/lt/gt/quot/apos; everything else is an undefined
+    entity and aborts the parse, discarding every item after that point.
+    """
     if isinstance(data, bytes):
         data = data.decode("utf-8", "ignore")
-    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
+    data = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", data)
+
+    def _ent(m):
+        name = m.group(1)
+        if name in XML_PREDEFINED:
+            return m.group(0)
+        cp = html_entities.name2codepoint.get(name)
+        return f"&#{cp};" if cp else ""
+
+    data = re.sub(r"&([a-zA-Z][a-zA-Z0-9]{0,31});", _ent, data)
+    data = re.sub(r"&(?!(?:#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;))", "&amp;", data)
+    return data
 
 STOP = {
     "the","a","an","and","or","of","to","in","for","on","with","at","by","from","as","is","are",
