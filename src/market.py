@@ -20,18 +20,37 @@ import csv, io, json, time, urllib.request, urllib.parse, datetime as dt
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
-YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5d"
+YAHOO_HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
+YAHOO = "https://{host}/v8/finance/chart/{sym}?interval=1d&range=5d"
 STOOQ = "https://stooq.com/q/l/?s={sym}&f=sd2t2ohlcv&h&e=csv"
 
 
+HEADERS = {
+    "User-Agent": UA,
+    "Accept": "text/csv,application/json,text/plain,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "identity",
+    "Connection": "close",
+}
+
+
 def _get(url, timeout=15):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()
 
 
 def _from_yahoo(sym):
-    raw = _get(YAHOO.format(sym=urllib.parse.quote(sym)))
+    last = None
+    for host in YAHOO_HOSTS:
+        try:
+            raw = _get(YAHOO.format(host=host, sym=urllib.parse.quote(sym)))
+            break
+        except Exception as ex:
+            last = ex
+            raw = None
+    if raw is None:
+        raise last or RuntimeError("yahoo unreachable")
     d = json.loads(raw)
     res = (d.get("chart") or {}).get("result") or []
     if not res:
@@ -83,14 +102,17 @@ def fetch(cfg, cache_path=None, log=print):
         return []
     symbols = mk.get("symbols", [])
     out, failed = [], []
+    diag = []
     for sym in symbols:
         row = None
-        for fn in (_from_yahoo, _from_stooq):
+        for name, fn in (("yahoo", _from_yahoo), ("stooq", _from_stooq)):
             try:
                 row = fn(sym)
                 if row:
                     break
-            except Exception:
+                diag.append(f"{sym}/{name}: empty")
+            except Exception as ex:
+                diag.append(f"{sym}/{name}: {type(ex).__name__} {str(ex)[:60]}")
                 row = None
         if row:
             out.append(row)
@@ -100,6 +122,9 @@ def fetch(cfg, cache_path=None, log=print):
 
     if failed:
         log(f"  market: {len(out)}/{len(symbols)} fetched, failed: {', '.join(failed[:8])}")
+        # Print the first few reasons - "0/23 failed" alone is not diagnosable.
+        for line in diag[:6]:
+            log(f"      {line}")
     else:
         log(f"  market: {len(out)}/{len(symbols)} fetched")
 
