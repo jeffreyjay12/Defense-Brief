@@ -137,8 +137,11 @@ Items:
                     adjusted += 1
                 sec = row.get("section")
                 if sec in sections and sec != d["section"]:
-                    d["why"] = d.get("why", []) + [f"re-routed {d['section']}->{sec}"]
-                    d["section"] = sec
+                    if d.get("_locked"):
+                        d["why"] = d.get("why", []) + [f"kept {d['section']} (locked)"]
+                    else:
+                        d["why"] = d.get("why", []) + [f"re-routed {d['section']}->{sec}"]
+                        d["section"] = sec
         except Exception as ex:  # noqa: BLE001
             log(f"  semantic: batch failed ({type(ex).__name__}), leaving unchanged")
             continue

@@ -459,7 +459,11 @@ def build_digest(items, cfg, now=None):
         if sc["stale"]:
             continue
         lead = max(c["items"], key=lambda x: x["weight"])
+        blob_l = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
+        locked = bool(hits(blob_l, cfg["entities"]["tier1"])) and \
+            cfg.get("routing", {}).get("lock_tier1_to_triad", True)
         out.append({
+            "_locked": locked,
             "id": slug(lead["link"] or lead["title"]),
             "title": lead["title"],
             "link": lead["link"],
@@ -467,7 +471,7 @@ def build_digest(items, cfg, now=None):
             "lead_source": lead["source"],
             "sources": sorted({i["source"] for i in c["items"]}),
             "published": lead["published"],
-            "section": route(c, cfg),
+            "section": "triad" if locked else route(c, cfg),
             **sc,
         })
     out.sort(key=lambda x: x["score"], reverse=True)

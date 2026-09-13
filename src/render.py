@@ -167,6 +167,11 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
         if not rows:
             continue
         label = cfg["sections"][key]["label"]
+        # Cap noisy sections so one source's editorial calendar cannot dominate
+        # the page. Items beyond the cap are dropped from display, not scored out.
+        caps = disp.get("max_section_items", {})
+        cap = caps.get(key, caps.get("_default", 40))
+        rows = rows[:cap]
         heads = [r for r in rows if r["score"] >= disp["headline_threshold"]][:disp["max_headlines_per_section"]]
         if not heads:
             heads = rows[:3]
