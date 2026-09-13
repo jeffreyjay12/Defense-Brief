@@ -227,8 +227,8 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Defense Brief</title><style>{CSS}</style></head><body>
-<header><div class="wrap"><h1>Defense Brief</h1>
+<title>Defense &amp; Nuclear Monitor</title><style>{CSS}</style></head><body>
+<header><div class="wrap"><h1>Defense &amp; Nuclear Monitor</h1>
 <div class="meta">{generated.strftime('%a %d %b %Y &middot; %H:%M UTC')} &middot; {len(digest)} stories</div>
 </div></header><div class="wrap">"""]
 
@@ -350,7 +350,7 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
 
 
 MANIFEST = json.dumps({
-    "name": "Defense Brief", "short_name": "Brief", "start_url": ".",
+    "name": "Defense & Nuclear Monitor", "short_name": "Def Monitor", "start_url": ".",
     "display": "standalone", "background_color": "#0f1216", "theme_color": "#0f1216",
     "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]
 }, indent=2)
