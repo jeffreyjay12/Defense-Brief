@@ -439,10 +439,15 @@ def route(c, cfg):
         if best is None or cand > best:
             best, best_key = cand, key
     if best_key is None:
-        # Never default to budget: that turned it into a dump for geopolitics,
-        # cyber and anything else unmatched. Unmatched analysis is research;
-        # unmatched news goes to the lowest-priority general section.
-        best_key = "thinktank"
+        # Never default to budget: that turned it into a dump. Unmatched analysis
+        # is research. Unmatched NEWS carrying award language is industrial by
+        # default - an award with no other subject match is a supplier story,
+        # not a think-tank essay.
+        if all(i["kind"] == "analysis" for i in c["items"]):
+            best_key = "thinktank"
+        else:
+            aw = cfg.get("awards_strip", {}).get("terms", [])
+            best_key = "dib" if hits(blob, aw) else "budget"
     return best_key
 
 
@@ -462,7 +467,11 @@ def build_digest(items, cfg, now=None):
         blob_l = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
         locked = bool(hits(blob_l, cfg["entities"]["tier1"])) and \
             cfg.get("routing", {}).get("lock_tier1_to_triad", True)
+        aw = cfg.get("awards_strip", {})
+        is_award = bool(aw.get("enabled")) and bool(hits(blob_l, aw.get("terms", []))) \
+            and sc["usd"] >= aw.get("min_usd", 1e6)
         out.append({
+            "is_award": is_award,
             "_locked": locked,
             "id": slug(lead["link"] or lead["title"]),
             "title": lead["title"],

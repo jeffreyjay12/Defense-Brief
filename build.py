@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from pipeline import fetch, build_digest          # noqa: E402
 from semantic import adjudicate                  # noqa: E402
+import market                                    # noqa: E402
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -136,8 +137,10 @@ def main():
             print(f"         {' | '.join(d['why'])}")
         return
 
+    market_rows = market.fetch(cfg, cache_path=DATA / 'market.json')
     summary = ai_summary(digest, cfg)
-    html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids)
+    html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids,
+                  market_rows=market_rows)
     (PUB / "index.html").write_text(html)
     (PUB / "manifest.json").write_text(MANIFEST)
     (PUB / "icon.svg").write_text(ICON)

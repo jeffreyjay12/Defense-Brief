@@ -405,7 +405,16 @@
         "facility clearance",
         "supply chain security",
         "itar registration",
-        "cleared facility"
+        "cleared facility",
+        "propulsion",
+        "propulsion system",
+        "rocket motor",
+        "interceptor production",
+        "munitions capacity",
+        "overhaul",
+        "repair and overhaul",
+        "turbine generator",
+        "depot maintenance"
       ]
     },
     "budget": {
@@ -533,7 +542,15 @@
         "quantum",
         "post-quantum",
         "electronic warfare",
-        "spectrum"
+        "spectrum",
+        "countermeasures",
+        "infrared countermeasures",
+        "circm",
+        "interceptor",
+        "seeker",
+        "radar site",
+        "missile warning",
+        "tracking satellite"
       ]
     },
     "nuclear_energy": {
@@ -621,33 +638,6 @@
         "brief",
         "testimony",
         "white paper"
-      ]
-    },
-    "contracts": {
-      "label": "Contracts & Awards",
-      "priority": 3,
-      "terms": [
-        "awarded",
-        "awards",
-        "wins contract",
-        "contract award",
-        "undefinitized",
-        "task order",
-        "delivery order",
-        "idiq",
-        "indefinite delivery",
-        "full-rate production",
-        "low-rate initial",
-        "lrip",
-        "production contract",
-        "modification",
-        "option exercised",
-        "sole-source award",
-        "competition",
-        "down-select",
-        "demo phase",
-        "full rate production deal",
-        "ceiling"
       ]
     },
     "global": {
@@ -838,16 +828,114 @@
     },
     "thesis": "You are filtering a news brief for a private-equity investor whose thesis is the DEFENSE INDUSTRIAL BASE - specifically sub-tier suppliers (Tier 2-4) of engineered components, specialty processing, and accredited testing, with a focus on the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites such as Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings), rad-hard microelectronics, and commercial/installation nuclear power as a secondary market.\n\nWhat matters: qualification barriers, sole-source positions, production capacity and bottlenecks, supplier-base health, contract awards that signal demand, M&A comps, and the hardware demand that AI and autonomy pull through (compute, sensors, power, packaging, thermal).\n\nWhat does NOT matter: geopolitics and foreign policy commentary, personnel moves, ceremonies, software and IT applications with no hardware implication, general military operations, and allied political relations.\n\nCalibration notes:\n- Threat and capability assessments of peer adversaries (Chinese or Russian modernisation, Taiwan contingency, Pacific posture, munitions consumption rates in Ukraine) are relevance 2: they are the demand driver behind procurement volumes, stockpile targets and capacity investment. Rate them 3 when they draw explicit conclusions about force structure, industrial capacity or weapons inventories.\n- Strategic analysis where the US is a party - adversary capability, contingency planning, deterrence posture, alliance burden-sharing - is relevance 2, or 3 where it reaches conclusions about force structure, weapons inventories or industrial capacity. Other countries' internal politics and third-party diplomacy, with no bearing on US posture or procurement, are relevance 0.\n- Cyber splits two ways. Requirements flowed DOWN to suppliers (CMMC, NIST 800-171, supply-chain security mandates, facility clearance rules) are relevance 3 and belong in the industrial base section: they are qualification barriers our targets must clear. The Department's OWN IT - CIO announcements, network modernisation, offensive cyber doctrine, intelligence-community tooling - is relevance 0.\n- Anything about schools, education, healthcare, personnel policy, facilities management, chemical or border security, or disaster response is relevance 0 regardless of which agency published it. GAO in particular audits the entire federal government.\n- Nuclear enterprise oversight and DOE contracting ARE relevant (relevance 2-3) because they bear on how the weapons complex buys from suppliers.\n- Summit diplomacy, alliance politics, leadership changes and regional pacts are relevance 0 unless the argument reaches explicit conclusions about force structure, weapons inventories, industrial capacity or procurement.",
     "section_guide": {
-      "triad": "US nuclear enterprise: Sentinel/ICBM, Columbia/Trident/SLBM, B-21, LRSO, SLCM-N, warheads, NNSA sites (Pantex, Y-12, Kansas City, Los Alamos, Livermore, Savannah River). News about these programmes goes here even if it mentions a contract or budget.",
-      "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances.",
-      "contracts": "Specific awards, task orders, IDIQs, production decisions and competition results. EXCEPT where the programme is part of the US nuclear enterprise - those belong in triad even when the story is a contract award.",
+      "triad": "US nuclear enterprise: Sentinel/ICBM, Columbia/Trident/SLBM, B-21, LRSO, SLCM-N, warheads, NNSA sites (Pantex, Y-12, Kansas City, Los Alamos, Livermore, Savannah River). News about these programmes goes here even if it mentions a contract or budget. Contract awards on these programmes belong here, not elsewhere.",
+      "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances. Contract awards for components, materials, energetics and capacity belong here.",
       "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines.",
-      "primes": "Corporate news about ESTABLISHED major contractors (Lockheed, Northrop, RTX, Boeing, GD, L3Harris, BAE, HII, Leidos): earnings, guidance, backlog, restructuring, layoffs, executives, investor days. NOT contract awards (contracts), NOT funding rounds or M&A (deals), NOT product tests or program milestones, NOT startups.",
+      "primes": "Corporate news about ESTABLISHED major contractors (Lockheed, Northrop, RTX, Boeing, GD, L3Harris, BAE, HII, Leidos) that has no other subject home: earnings, guidance, backlog, restructuring, layoffs, executives, investor days, export bans. NOT contract awards - those go to the subject the contract is about. NOT funding rounds or M&A (deals). NOT product tests or programme milestones. NOT startups.",
       "deals": "Ownership and capital transactions: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, AND startup funding rounds of any size (seed through late stage). A company raising money belongs here, not in primes.",
       "nuclear_energy": "US commercial and defence-installation nuclear: reactors, restarts, SMRs and microreactors, fuel cycle and enrichment, utility and hyperscaler power deals, DOE loans, NRC licensing. Foreign reactor construction, foreign utility news and general industry promotion with no US supply-chain or technology link is relevance 0.",
       "tech": "Enabling HARDWARE and the systems that pull it: rad-hard microelectronics, trusted foundry, packaging, sensors, seekers, power, thermal, autonomy and unmanned platforms, directed energy, space hardware. AI and software only when they drive hardware demand - an AI tool for staff work, chatbot adoption or IT modernisation is relevance 0.",
-      "global": "Defence procurement, industry and military capability of OTHER countries - allies and partners (NATO, AUKUS, Japan, Korea, Israel, Ukraine, Poland, India) and adversaries (Russia, China, Iran, North Korea). Their orders, exports, co-production, FMS, shipyards and production rates. NOT their internal politics, leadership succession, regional diplomacy or third-party disputes - those are irrelevant. If the argument is really about US posture or capability, it is analysis, not this section.",
+      "global": "Defence procurement, industry and military capability of OTHER countries - allies and partners (NATO, AUKUS, Japan, Korea, Israel, Ukraine, Poland, India) and adversaries (Russia, China, Iran, North Korea). Their orders, exports, co-production, FMS, shipyards and production rates. NOT their internal politics, leadership succession, regional diplomacy or third-party disputes - those are irrelevant. If the argument is really about US posture or capability, it is analysis, not this section. A piece whose subject is US policy, US forces or US industry is NOT this section even when it discusses allies - US trade policy toward allies, US naval readiness, US posture in Europe all belong in analysis.",
       "thinktank": "Strategic analysis, essays and research reports whose argument bears on US capability, posture, force structure, deterrence or what the US should buy. Adversary assessments (Chinese or Russian modernisation), contingency analysis (Taiwan, Pacific, NATO), deterrence debates and industrial-capacity arguments all belong here even though they discuss other countries - the subject is US strategy. Not news reporting or government announcements."
     }
+  },
+  "awards_strip": {
+    "_comment": "Compact scannable list of transactions near the top of the page. Items still live in their subject sections; this is a view, not a section. An item qualifies if it carries award language AND a dollar figure, or is flagged by the semantic pass.",
+    "enabled": true,
+    "max_items": 12,
+    "min_usd": 1000000,
+    "terms": [
+      "awarded",
+      "awards",
+      "wins",
+      "won",
+      "contract",
+      "task order",
+      "delivery order",
+      "idiq",
+      "modification",
+      "production deal",
+      "full-rate",
+      "low-rate",
+      "option exercised",
+      "undefinitized",
+      "procurement of"
+    ]
+  },
+  "market": {
+    "_comment": "Closing prices for the ticker strip. Order here is display order. Yahoo chart endpoint primary, Stooq fallback, cached last-known if both fail. Set enabled=false to remove the strip.",
+    "enabled": true,
+    "delay_seconds": 0.25,
+    "groups": [
+      {
+        "label": "Sub-tier & upstream",
+        "symbols": [
+          "HWM",
+          "AIN",
+          "HEI",
+          "TDG",
+          "CW",
+          "DCO",
+          "MOG-A",
+          "SODI"
+        ]
+      },
+      {
+        "label": "Mid & primes",
+        "symbols": [
+          "LDOS",
+          "DRS",
+          "TXT",
+          "LMT",
+          "NOC",
+          "RTX",
+          "GD",
+          "LHX",
+          "HII",
+          "BA"
+        ]
+      },
+      {
+        "label": "Sector & macro",
+        "symbols": [
+          "XAR",
+          "ITA",
+          "^GSPC",
+          "^IXIC",
+          "^TNX"
+        ]
+      }
+    ],
+    "symbols": [
+      "HWM",
+      "AIN",
+      "HEI",
+      "TDG",
+      "CW",
+      "DCO",
+      "MOG-A",
+      "SODI",
+      "LDOS",
+      "DRS",
+      "TXT",
+      "LMT",
+      "NOC",
+      "RTX",
+      "GD",
+      "LHX",
+      "HII",
+      "BA",
+      "XAR",
+      "ITA",
+      "^GSPC",
+      "^IXIC",
+      "^TNX"
+    ],
+    "yield_symbols": [
+      "^TNX",
+      "^TYX",
+      "^FVX",
+      "^IRX"
+    ]
   }
 }

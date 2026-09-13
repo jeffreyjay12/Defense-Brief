@@ -37,6 +37,31 @@ h1{margin:0;font-size:17px;letter-spacing:-.01em}
 .panel a{color:var(--ink);text-decoration:none}
 .panel .lbl{color:var(--dim);font-size:11px;font-family:var(--mono)}
 .panel .empty{color:var(--dim);font-size:13px;font-style:italic}
+.awards{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;margin:0 0 16px}
+.awards h2{margin:0 0 7px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.awrow{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);font-size:13.5px}
+.awrow:first-of-type{border-top:none}
+.awrow .amt{font-family:var(--mono);font-size:12px;color:var(--hot);min-width:62px;text-align:right;flex-shrink:0}
+.awrow a{color:var(--ink);text-decoration:none;flex:1}
+.awrow .sec{font-family:var(--mono);font-size:10.5px;color:var(--dim);flex-shrink:0}
+.mkt{border:1px solid var(--line);border-radius:10px;background:var(--card);
+  overflow:hidden;margin:0 0 14px;position:relative}
+.mkt .mhead{display:flex;justify-content:space-between;align-items:baseline;
+  padding:7px 12px 3px;font-family:var(--mono);font-size:10px;color:var(--dim);
+  text-transform:uppercase;letter-spacing:.07em}
+.mtrack{display:flex;gap:22px;padding:4px 12px 9px;white-space:nowrap;
+  animation:mscroll 70s linear infinite;width:max-content}
+.mkt:hover .mtrack{animation-play-state:paused}
+@keyframes mscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.mtrack{animation:none;overflow-x:auto;width:auto}}
+.tk{font-family:var(--mono);font-size:12.5px;display:inline-flex;gap:6px;align-items:baseline}
+.tk .sym{font-weight:700}
+.tk .px{color:var(--dim)}
+.tk .up{color:var(--dib)}
+.tk .dn{color:#e06c6c}
+.tk .flat{color:var(--dim)}
+.tk .spk{opacity:.85;vertical-align:middle;margin:0 1px}
 .changed{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:14px 16px;margin:16px 0}
 .changed h2{margin:0 0 8px;font-size:12px;text-transform:uppercase;
@@ -44,13 +69,26 @@ h1{margin:0;font-size:17px;letter-spacing:-.01em}
 .changed li{margin:5px 0;font-size:14.5px}
 .changed ul{margin:0;padding-left:18px}
 section{margin:22px 0}
-.sh{display:flex;align-items:baseline;gap:8px;margin:0 0 10px}
-.sh h2{margin:0;font-size:15px;letter-spacing:-.01em}
-.sh .n{color:var(--dim);font-size:12px;font-family:var(--mono)}
+.sh{display:flex;align-items:baseline;gap:9px;margin:0 0 11px;
+  padding-bottom:6px;border-bottom:2px solid var(--accent)}
+.sh h2{margin:0;font-size:16.5px;letter-spacing:-.015em;font-weight:700}
+.sh .n{color:var(--dim);font-size:11.5px;font-family:var(--mono);margin-left:auto}
+/* per-section accent so the page has rhythm when scrolling */
+section[data-sec="triad"] .sh{border-color:#7aa7e8}
+section[data-sec="dib"]   .sh{border-color:#7bc48a}
+section[data-sec="budget"] .sh{border-color:#c9a227}
+section[data-sec="primes"] .sh{border-color:#c58bd6}
+section[data-sec="deals"] .sh{border-color:#e8894a}
+section[data-sec="nuclear_energy"] .sh{border-color:#5ac8c8}
+section[data-sec="tech"] .sh{border-color:#8f9bb3}
+section[data-sec="global"] .sh{border-color:#d69b7b}
+section[data-sec="thinktank"] .sh{border-color:#9a8fd6}
 .item{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:12px 14px}
 .item a{color:var(--ink);text-decoration:none;font-weight:600;font-size:15px;
-  display:block;margin-bottom:5px}
+  display:block;margin-bottom:5px;letter-spacing:-.005em}
+.items .item:first-child a{font-size:17px;line-height:1.3;letter-spacing:-.015em}
+.items .item:first-child .gloss{font-size:14px}
 .item a:active{opacity:.6}
 .gloss{color:var(--dim);font-size:13.5px;margin:0 0 7px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -73,7 +111,7 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
   margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 """
 
-SECTION_ORDER = ["triad", "dib", "contracts", "budget", "primes", "deals",
+SECTION_ORDER = ["triad", "dib", "budget", "primes", "deals",
                  "nuclear_energy", "tech", "global", "thinktank"]
 
 
@@ -109,7 +147,72 @@ def summarize(digest, cfg):
     return lines
 
 
-def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=None):
+def _spark(series, w=34, h=12):
+    """Inline SVG sparkline. Drawn from the 5-day series the quote already carries."""
+    pts = [p for p in (series or []) if p is not None]
+    if len(pts) < 2:
+        return ""
+    lo, hi = min(pts), max(pts)
+    rng = (hi - lo) or 1.0
+    step = w / (len(pts) - 1)
+    coords = " ".join(f"{i*step:.1f},{h - (p-lo)/rng*h:.1f}" for i, p in enumerate(pts))
+    up = pts[-1] >= pts[0]
+    col = "var(--dib)" if up else "#e06c6c"
+    return (f'<svg class="spk" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
+            f'preserveAspectRatio="none" aria-hidden="true">'
+            f'<polyline points="{coords}" fill="none" stroke="{col}" '
+            f'stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>')
+
+
+def market_strip(rows, cfg):
+    """Scrolling close-price ticker. Duplicated once so the loop is seamless."""
+    if not rows:
+        return ""
+    mk = cfg.get("market", {})
+    order = {s: i for i, s in enumerate(mk.get("symbols", []))}
+    rows = sorted(rows, key=lambda r: order.get(r["symbol"], 99))
+    stale = any(r.get("stale") for r in rows)
+    asof = next((r.get("date") for r in rows if r.get("date")), "")
+    cells = []
+    yields = set(mk.get("yield_symbols", []))
+    for r in rows:
+        px, prev = r.get("price"), r.get("prev")
+        if px is None:
+            continue
+        is_yield = r["symbol"] in yields
+        if prev:
+            if is_yield:
+                # Rates quote as a level and move in basis points. Showing a
+                # percent change of a percent ("+0.72%" for 4.18 -> 4.21) makes
+                # the reader recover 3bp by arithmetic.
+                bp = (px - prev) * 100
+                cls = "up" if bp > 0.5 else ("dn" if bp < -0.5 else "flat")
+                chg = f'<span class="{cls}">{bp:+.0f}bp</span>'
+            else:
+                pct = (px / prev - 1) * 100
+                cls = "up" if pct > 0.05 else ("dn" if pct < -0.05 else "flat")
+                chg = f'<span class="{cls}">{pct:+.2f}%</span>'
+        else:
+            chg = '<span class="flat">&mdash;</span>'
+        sym = r["symbol"].lstrip("^")
+        if is_yield:
+            fmt = f"{px:.2f}%"
+        else:
+            fmt = f"{px:,.2f}" if px < 1000 else f"{px:,.0f}"
+        cells.append(f'<span class="tk"><span class="sym">{esc(sym)}</span>'
+                     f'<span class="px">{fmt}</span>{_spark(r.get("series"))}{chg}</span>')
+    if not cells:
+        return ""
+    track = "".join(cells)
+    note = "last close" + (f" &middot; {esc(asof)}" if asof else "")
+    if stale:
+        note += " &middot; cached"
+    return (f'<div class="mkt"><div class="mhead"><span>Markets</span><span>{note}</span></div>'
+            f'<div class="mtrack">{track}{track}</div></div>')
+
+
+def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=None,
+           market_rows=None):
     generated = generated or dt.datetime.now(dt.timezone.utc)
     disp = cfg["display"]
     new_ids = set(new_ids or [])
@@ -128,6 +231,8 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
 <header><div class="wrap"><h1>Defense Brief</h1>
 <div class="meta">{generated.strftime('%a %d %b %Y &middot; %H:%M UTC')} &middot; {len(digest)} stories</div>
 </div></header><div class="wrap">"""]
+
+    parts.append(market_strip(market_rows or [], cfg))
 
     def _panel_items(rows):
         out = []
@@ -162,6 +267,24 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
     parts.append(_panel_items(week) if week else '<p class="empty">No stories in window.</p>')
     parts.append("</div></div>")
 
+    # Awards strip: transactions from every section, largest first. Scannable
+    # row list rather than cards - a different reading mode from the stories.
+    aw = cfg.get("awards_strip", {})
+    if aw.get("enabled"):
+        deals = sorted([d for d in digest if d.get("is_award")],
+                       key=lambda x: x.get("usd", 0), reverse=True)[:aw.get("max_items", 12)]
+        if deals:
+            parts.append('<div class="awards"><h2>Awards &amp; transactions</h2>')
+            for d in deals:
+                usd = d.get("usd", 0)
+                amt = f"${usd/1e9:.1f}B" if usd >= 1e9 else f"${usd/1e6:.0f}M"
+                sec = cfg["sections"][d["section"]]["label"]
+                parts.append(
+                    f'<div class="awrow"><span class="amt">{amt}</span>'
+                    f'<a href="{esc(d["link"])}" target="_blank" rel="noopener">{esc(d["title"])}</a>'
+                    f'<span class="sec">{esc(sec)}</span></div>')
+            parts.append("</div>")
+
     for key in SECTION_ORDER:
         rows = by_sec.get(key) or []
         if not rows:
@@ -184,7 +307,8 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             heads = heads + extra
         tail = [r for r in rows if r not in heads][:disp["max_tail_per_section"]]
 
-        parts.append(f'<section><div class="sh"><h2>{esc(label)}</h2><span class="n">{len(rows)}</span></div>')
+        parts.append(f'<section data-sec="{esc(key)}"><div class="sh"><h2>{esc(label)}</h2>'
+                     f'<span class="n">{len(rows)}</span></div>')
         parts.append('<div class="items">')
         for r in heads:
             tags = []
@@ -193,6 +317,8 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             tags.append(f'<span class="tag">{esc(r["lead_source"])}</span>')
             if r["n_sources"] > 1:
                 tags.append(f'<span class="tag hot">{r["n_sources"]} sources</span>')
+            if r.get("is_award"):
+                tags.append('<span class="tag hot">award</span>')
             if r["dib"]:
                 tags.append('<span class="tag dib">industrial base</span>')
             if r["is_analysis"]:
