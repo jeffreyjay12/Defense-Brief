@@ -762,13 +762,20 @@
       "watching for at",
       "week ahead",
       "podcast",
-      "interview with"
+      "interview with",
+      "compass",
+      "the week in",
+      "roundup"
     ],
     "summary_terms": [
       "[sponsored]",
       "sponsored content",
       "this is the tenth article",
-      "limited series celebrating"
+      "limited series celebrating",
+      "a weekly digest",
+      "only for war on the rocks members",
+      "curated selection of",
+      "members-only"
     ]
   },
   "routing": {
@@ -778,15 +785,15 @@
   "semantic": {
     "_comment": "Model-based relevance for the ambiguous middle. Keyword rules cannot tell a land-based-deterrence essay from a Nicaragua politics essay, or an AI-silicon story from an AI-paperwork story. Only items scoring between floor and ceiling are sent: high scorers already have hard evidence (dollars, corroboration, tier-1 programme), low scorers are noise. Set enabled=false to disable entirely. Without ANTHROPIC_API_KEY it silently no-ops.",
     "enabled": true,
-    "floor": 4.0,
-    "ceiling": 20.0,
+    "floor": -5.0,
+    "ceiling": 26.0,
     "batch_size": 25,
-    "max_items": 120,
+    "max_items": 200,
     "deltas": {
-      "0": -14,
-      "1": -6,
-      "2": 1,
-      "3": 6
+      "0": -28,
+      "1": -12,
+      "2": 2,
+      "3": 8
     },
     "thesis": "You are filtering a news brief for a private-equity investor whose thesis is the DEFENSE INDUSTRIAL BASE - specifically sub-tier suppliers (Tier 2-4) of engineered components, specialty processing, and accredited testing, with a focus on the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites such as Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings), rad-hard microelectronics, and commercial/installation nuclear power as a secondary market.\n\nWhat matters: qualification barriers, sole-source positions, production capacity and bottlenecks, supplier-base health, contract awards that signal demand, M&A comps, and the hardware demand that AI and autonomy pull through (compute, sensors, power, packaging, thermal).\n\nWhat does NOT matter: geopolitics and foreign policy commentary, personnel moves, ceremonies, software and IT applications with no hardware implication, general military operations, and allied political relations."
   }
