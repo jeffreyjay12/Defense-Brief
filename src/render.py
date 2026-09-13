@@ -74,7 +74,7 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
 """
 
 SECTION_ORDER = ["triad", "dib", "contracts", "budget", "primes", "deals",
-                 "tech", "cyber", "nuclear_energy", "global", "thinktank"]
+                 "nuclear_energy", "tech", "global", "thinktank"]
 
 
 def esc(s):
@@ -169,7 +169,14 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
         label = cfg["sections"][key]["label"]
         heads = [r for r in rows if r["score"] >= disp["headline_threshold"]][:disp["max_headlines_per_section"]]
         if not heads:
-            heads = rows[:2]
+            heads = rows[:3]
+        # The card grid is up to 3 wide, so a count that isn't a multiple of 3
+        # leaves visible gaps. Round down to a full row when we have the items,
+        # and top up from the tail when we're one or two short.
+        if len(rows) >= 3 and len(heads) % 3:
+            want = len(heads) + (3 - len(heads) % 3)
+            extra = [r for r in rows if r not in heads][:want - len(heads)]
+            heads = heads + extra
         tail = [r for r in rows if r not in heads][:disp["max_tail_per_section"]]
 
         parts.append(f'<section><div class="sh"><h2>{esc(label)}</h2><span class="n">{len(rows)}</span></div>')
