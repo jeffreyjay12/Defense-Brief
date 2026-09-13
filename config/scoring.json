@@ -765,7 +765,19 @@
       "interview with",
       "compass",
       "the week in",
-      "roundup"
+      "roundup",
+      "k-12",
+      "schools",
+      "education:",
+      "literacy",
+      "student",
+      "chemical security",
+      "terrorist ties",
+      "food safety",
+      "housing",
+      "child care",
+      "health care:",
+      "veterans benefits"
     ],
     "summary_terms": [
       "[sponsored]",
@@ -795,6 +807,18 @@
       "2": 2,
       "3": 8
     },
-    "thesis": "You are filtering a news brief for a private-equity investor whose thesis is the DEFENSE INDUSTRIAL BASE - specifically sub-tier suppliers (Tier 2-4) of engineered components, specialty processing, and accredited testing, with a focus on the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites such as Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings), rad-hard microelectronics, and commercial/installation nuclear power as a secondary market.\n\nWhat matters: qualification barriers, sole-source positions, production capacity and bottlenecks, supplier-base health, contract awards that signal demand, M&A comps, and the hardware demand that AI and autonomy pull through (compute, sensors, power, packaging, thermal).\n\nWhat does NOT matter: geopolitics and foreign policy commentary, personnel moves, ceremonies, software and IT applications with no hardware implication, general military operations, and allied political relations."
+    "thesis": "You are filtering a news brief for a private-equity investor whose thesis is the DEFENSE INDUSTRIAL BASE - specifically sub-tier suppliers (Tier 2-4) of engineered components, specialty processing, and accredited testing, with a focus on the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites such as Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings), rad-hard microelectronics, and commercial/installation nuclear power as a secondary market.\n\nWhat matters: qualification barriers, sole-source positions, production capacity and bottlenecks, supplier-base health, contract awards that signal demand, M&A comps, and the hardware demand that AI and autonomy pull through (compute, sensors, power, packaging, thermal).\n\nWhat does NOT matter: geopolitics and foreign policy commentary, personnel moves, ceremonies, software and IT applications with no hardware implication, general military operations, and allied political relations.\n\nCalibration notes:\n- Threat and capability assessments of peer adversaries (Chinese or Russian modernisation, Taiwan contingency, Pacific posture, munitions consumption rates in Ukraine) are relevance 2: they are the demand driver behind procurement volumes, stockpile targets and capacity investment. Rate them 3 when they draw explicit conclusions about force structure, industrial capacity or weapons inventories.\n- Regional and domestic politics of other countries with no bearing on US force structure or procurement (leadership succession, internal reform, bilateral diplomacy) are relevance 0.\n- Cyber, IT, networks and software with no hardware procurement implication are relevance 1.\n- Anything about schools, education, healthcare, personnel policy, facilities management, chemical or border security, or disaster response is relevance 0 regardless of which agency published it. GAO in particular audits the entire federal government.\n- Nuclear enterprise oversight and DOE contracting ARE relevant (relevance 2-3) because they bear on how the weapons complex buys from suppliers.",
+    "section_guide": {
+      "triad": "US nuclear enterprise: Sentinel/ICBM, Columbia/Trident/SLBM, B-21, LRSO, SLCM-N, warheads, NNSA sites (Pantex, Y-12, Kansas City, Los Alamos, Livermore, Savannah River). News about these programmes goes here even if it mentions a contract or budget.",
+      "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III.",
+      "contracts": "Specific contract awards, task orders, IDIQs, production decisions and competitions - the transaction itself.",
+      "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines.",
+      "primes": "Corporate news about major contractors: earnings, guidance, backlog, restructuring, layoffs, facilities, executives.",
+      "deals": "M&A, private equity, take-privates, divestitures, funding rounds, IPOs, antitrust - ownership and capital transactions.",
+      "nuclear_energy": "Commercial and installation nuclear power: reactors, restarts, SMRs and microreactors, fuel cycle, utility and hyperscaler deals, DOE loans.",
+      "tech": "Enabling hardware and the systems that pull it: rad-hard microelectronics, trusted foundry, packaging, sensors, power, autonomy, unmanned, directed energy, space. Cyber and software items belong here too, at low relevance.",
+      "global": "Foreign and allied defence: other nations' procurement, FMS and exports, alliance politics, foreign conflicts.",
+      "thinktank": "ONLY genuine commentary, essays and research reports that argue a position or analyse a question. Never use this for news reporting, government announcements or contract news - those belong in a substantive section even if the fit is imperfect."
+    }
   }
 }

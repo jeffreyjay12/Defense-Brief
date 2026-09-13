@@ -85,7 +85,11 @@ def adjudicate(digest, cfg, log=print):
     sections = {k: v["label"] for k, v in cfg["sections"].items()
                 if isinstance(v, dict) and not k.startswith("_")}
     thesis = sem.get("thesis", "")
-    guide = "\n".join(f"  {k} = {v}" for k, v in sections.items())
+    # Prefer the richer per-section descriptions when configured: bare labels
+    # led the model to treat "Analysis & Research" as a catch-all.
+    desc = sem.get("section_guide", {})
+    guide = "\n".join(f"  {k} ({sections[k]}): {desc.get(k, '')}".rstrip(": ")
+                      for k in sections)
 
     by_id = {d["id"]: d for d in digest}
     adjusted = 0
