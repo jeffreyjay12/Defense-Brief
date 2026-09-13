@@ -22,7 +22,7 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
 YAHOO_HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
 YAHOO = "https://{host}/v8/finance/chart/{sym}?interval=1d&range=5d"
-STOOQ = "https://stooq.com/q/l/?s={sym}&f=sd2t2ohlcv&h&e=csv"
+STOOQ = "https://stooq.com/q/d/l/?s={sym}&d1={d1}&d2={d2}&i=d"
 
 
 HEADERS = {
@@ -75,25 +75,40 @@ def _from_yahoo(sym):
             "series": [float(c) for c in closes[-5:]] if closes else []}
 
 
+# Stooq uses its own tickers: US equities take a .us suffix, indices and rates
+# have bespoke codes.
+STOOQ_MAP = {"^GSPC": "^spx", "^IXIC": "^ndq", "^DJI": "^dji",
+             "^TNX": "10usy.b", "^TYX": "30usy.b", "^FVX": "5usy.b"}
+
+
 def _stooq_symbol(sym):
+    if sym in STOOQ_MAP:
+        return STOOQ_MAP[sym]
     if sym.startswith("^"):
-        return {"^GSPC": "^spx", "^TNX": "^tnx", "^DJI": "^dji"}.get(sym, sym.lower())
-    return sym.lower().replace(".", "-") + ".us"
+        return sym.lower()
+    return sym.lower().replace("-", "-") + ".us"
 
 
 def _from_stooq(sym):
-    raw = _get(STOOQ.format(sym=_stooq_symbol(sym))).decode("utf-8", "ignore")
-    rows = list(csv.DictReader(io.StringIO(raw)))
-    if not rows:
+    today = dt.date.today()
+    start = today - dt.timedelta(days=20)
+    url = STOOQ.format(sym=_stooq_symbol(sym),
+                       d1=start.strftime("%Y%m%d"), d2=today.strftime("%Y%m%d"))
+    raw = _get(url).decode("utf-8", "ignore")
+    rows = [r for r in csv.DictReader(io.StringIO(raw)) if r.get("Close")]
+    closes = []
+    for r in rows:
+        try:
+            closes.append((r.get("Date"), float(r["Close"])))
+        except (TypeError, ValueError):
+            continue
+    if not closes:
         return None
-    r = rows[0]
-    try:
-        close = float(r.get("Close"))
-        op = float(r.get("Open"))
-    except (TypeError, ValueError):
-        return None
-    return {"symbol": sym, "price": close, "prev": op or None,
-            "date": r.get("Date"), "src": "stooq"}
+    closes = closes[-5:]
+    return {"symbol": sym, "price": closes[-1][1],
+            "prev": closes[-2][1] if len(closes) > 1 else None,
+            "date": closes[-1][0], "src": "stooq",
+            "series": [c for _, c in closes]}
 
 
 def fetch(cfg, cache_path=None, log=print):
@@ -105,7 +120,10 @@ def fetch(cfg, cache_path=None, log=print):
     diag = []
     for sym in symbols:
         row = None
-        for name, fn in (("yahoo", _from_yahoo), ("stooq", _from_stooq)):
+        for name, fn in (("stooq", _from_stooq), ("stooq2", _from_stooq),
+                         ("yahoo", _from_yahoo)):
+            if name == "stooq2":
+                time.sleep(1.0)   # one retry for a transient blip
             try:
                 row = fn(sym)
                 if row:
