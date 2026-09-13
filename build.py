@@ -16,6 +16,7 @@ ROOT = pathlib.Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from pipeline import fetch, build_digest          # noqa: E402
+from semantic import adjudicate                  # noqa: E402
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -114,6 +115,7 @@ def main():
 
     prev_ids = previous_ids()
     digest, filtered = build_digest(raw, cfg)
+    digest = adjudicate(digest, cfg)
     new_ids = {d["id"] for d in digest if d["id"] not in prev_ids} if prev_ids else set()
     (DATA / "digest.json").write_text(json.dumps(digest, indent=1))
     (DATA / "filtered.json").write_text(json.dumps(filtered, indent=1))
