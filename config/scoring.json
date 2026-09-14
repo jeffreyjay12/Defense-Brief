@@ -881,9 +881,18 @@
         ]
       },
       {
+        "label": "Nuclear",
+        "symbols": [
+          "BWXT",
+          "LEU",
+          "CEG",
+          "VST",
+          "OKLO"
+        ]
+      },
+      {
         "label": "Mid & primes",
         "symbols": [
-          "LDOS",
           "DRS",
           "TXT",
           "LMT",
@@ -891,17 +900,14 @@
           "RTX",
           "GD",
           "LHX",
-          "HII",
-          "BA"
+          "HII"
         ]
       },
       {
         "label": "Sector & macro",
         "symbols": [
-          "XAR",
           "ITA",
           "SPY",
-          "QQQ",
           "US10Y"
         ]
       }
@@ -915,7 +921,11 @@
       "DCO",
       "MOG-A",
       "SODI",
-      "LDOS",
+      "BWXT",
+      "LEU",
+      "CEG",
+      "VST",
+      "OKLO",
       "DRS",
       "TXT",
       "LMT",
@@ -924,11 +934,8 @@
       "GD",
       "LHX",
       "HII",
-      "BA",
-      "XAR",
       "ITA",
       "SPY",
-      "QQQ",
       "US10Y"
     ],
     "yield_symbols": [
