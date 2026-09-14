@@ -43,13 +43,13 @@
     },
     {
       "name": "National Defense (NDIA)",
-      "url": "https://www.nationaldefensemagazine.org/rss/articles",
+      "url": "https://www.nationaldefensemagazine.org/api/rss/articles",
       "kind": "news",
       "weight": 1.1,
       "hint": [
         "dib"
       ],
-      "note": "URL corrected Sept 2026 - confirm in build log"
+      "note": "404 on /rss/articles - trying /api/rss/articles; verify"
     },
     {
       "name": "War on the Rocks",
@@ -82,13 +82,13 @@
     },
     {
       "name": "NNSA",
-      "url": "https://www.energy.gov/nnsa/listings/nnsa-news/feed",
+      "url": "https://www.energy.gov/nnsa/listings/nnsa-news/rss.xml",
       "kind": "news",
       "weight": 1.3,
       "hint": [
         "triad"
       ],
-      "note": "URL corrected Sept 2026 - confirm in build log"
+      "note": "404 on /feed - trying /rss.xml; verify"
     },
     {
       "name": "DOE Newsroom",
@@ -235,16 +235,6 @@
       ]
     },
     {
-      "name": "Reuters Aerospace",
-      "url": "https://www.reuters.com/business/aerospace-defense/rss",
-      "kind": "news",
-      "weight": 1.2,
-      "hint": [
-        "primes",
-        "deals"
-      ]
-    },
-    {
       "name": "Inside Defense INSIDER",
       "url": "https://insidedefense.com/rss.xml",
       "kind": "news",
@@ -264,7 +254,7 @@
         "budget",
         "thinktank"
       ],
-      "note": "budget and force-structure analysis - closest think tank to the thesis"
+      "note": "403 from CI - datacenter IP block, same as the Substacks. Kept in case it lifts."
     },
     {
       "name": "Brookings Defense",
@@ -296,7 +286,7 @@
         "budget",
         "thinktank"
       ],
-      "note": "Todd Harrison budget work; broad feed, semantic pass filters"
+      "note": "403 from CI - datacenter IP block, same as the Substacks. Kept in case it lifts."
     },
     {
       "name": "Stimson Center",

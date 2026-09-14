@@ -124,6 +124,9 @@ def _scrub(data):
 
     data = re.sub(r"&([a-zA-Z][a-zA-Z0-9]{0,31});", _ent, data)
     data = re.sub(r"&(?!(?:#\d+;|#x[0-9a-fA-F]+;|amp;|lt;|gt;|quot;|apos;))", "&amp;", data)
+    # Unescaped HTML inside element text produces "mismatched tag". Strip the
+    # usual offenders that publishers leak into descriptions unescaped.
+    data = re.sub(r"(?i)<(br|hr|img|meta|link|input)\b([^>]*?)(?<!/)>", r"<\1\2/>", data)
     return data
 
 
@@ -169,8 +172,8 @@ def fetch(sources, limit_per_feed=40, log=print):
                 log(f"  ! {s['name']}: {http_err or 'fetch failed'}")
                 continue
             d = feedparser.parse(raw_bytes)
-            if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
-                log("      strict parse failed, trying scrub...")
+            if getattr(d, "bozo", 0) and not d.entries:
+                log("      strict parse failed, scrubbing...")
                 d = feedparser.parse(_scrub(raw_bytes))
                 log(f"      after scrub: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
