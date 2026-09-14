@@ -81,19 +81,37 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
 XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
 
 
+ACCEPT_VARIANTS = [
+    "application/rss+xml, application/xml, text/xml, */*;q=0.8",
+    "*/*",
+]
+
+
 def _read(url, timeout=25, log=None, want_error=False):
     """Fetch bytes ourselves so we can set a browser UA and repair the XML."""
+    last_msg = None
+    for accept in ACCEPT_VARIANTS:
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": UA,
+                "Accept": accept,
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "identity",
+                "Connection": "close",
+            })
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                data = r.read()
+            break
+        except Exception as ex:
+            last_msg = f"{type(ex).__name__}: {str(ex)[:90]}"
+            code = getattr(ex, "code", None)
+            if code in (406, 415) and accept != ACCEPT_VARIANTS[-1]:
+                continue          # server dislikes our Accept - retry plainer
+            data = None
+            break
     try:
-        req = urllib.request.Request(url, headers={
-            "User-Agent": UA,
-            "Accept": "application/rss+xml, application/xml, text/xml, */*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Accept-Encoding": "identity",
-            "Cache-Control": "no-cache",
-            "Connection": "close",
-        })
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            data = r.read()
+        if data is None:
+            raise RuntimeError(last_msg or "fetch failed")
         if log:
             log(f"      _read ok: {len(data)} bytes, ctype={r.headers.get('Content-Type','?')}")
         return (data, None) if want_error else data

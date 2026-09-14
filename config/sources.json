@@ -188,7 +188,8 @@
       "hint": [
         "thinktank"
       ],
-      "note": "URL corrected Sept 2026 - confirm in build log"
+      "note": "403 from CI (was working, now blocked) - candidate for email ingestion",
+      "enabled": false
     },
     {
       "name": "RAND",
@@ -268,7 +269,8 @@
       "hint": [
         "thinktank"
       ],
-      "note": "site-wide feed - Brookings publishes no topic-level feeds. Defense is a minority of output, so weight is low and the semantic pass does the filtering."
+      "note": "malformed XML that scrub, namespace-strip and salvage all failed to repair. Site-wide feed, low value - parked rather than chased further.",
+      "enabled": false
     },
     {
       "name": "Mitchell Institute",
