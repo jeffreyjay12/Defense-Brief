@@ -527,10 +527,19 @@ def route(c, cfg):
     ent = cfg["entities"]
     tier1_hits = hits(blob, ent["tier1"])
     program_bonus = cfg.get("routing", {}).get("tier1_triad_bonus", 8)
+    # News about a tier-1 programme belongs in triad; commentary about it
+    # belongs in analysis. Applying the bonus to both put every nuclear essay
+    # in triad and left Analysis & Research thin on nuclear content.
+    if all(i["kind"] == "analysis" for i in c["items"]):
+        program_bonus = 0
 
     best, best_key = None, None
+    analysis_only = all(i["kind"] == "analysis" for i in c["items"])
     for key, sconf in cfg["sections"].items():
         if key.startswith("_") or not isinstance(sconf, dict):
+            continue
+        if key == "triad" and analysis_only and \
+                cfg.get("routing", {}).get("triad_is_news_only", True):
             continue
         h = hits(blob, sconf["terms"])
         sc = sum(len(t.split()) ** 2 for t in h) + (1 if key in hint else 0)
@@ -568,8 +577,10 @@ def build_digest(items, cfg, now=None):
             continue
         lead = max(c["items"], key=lambda x: x["weight"])
         blob_l = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
-        locked = bool(hits(blob_l, cfg["entities"]["tier1"])) and \
-            cfg.get("routing", {}).get("lock_tier1_to_triad", True)
+        is_analysis_cluster = all(i["kind"] == "analysis" for i in c["items"])
+        locked = (bool(hits(blob_l, cfg["entities"]["tier1"]))
+                  and cfg.get("routing", {}).get("lock_tier1_to_triad", True)
+                  and not is_analysis_cluster)
         aw = cfg.get("awards_strip", {})
         is_award = bool(aw.get("enabled")) and bool(hits(blob_l, aw.get("terms", []))) \
             and sc["usd"] >= aw.get("min_usd", 1e6)

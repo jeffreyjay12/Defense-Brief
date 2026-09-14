@@ -120,8 +120,13 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
 
 # Fixed priority order - deliberately NOT by item count. The thesis sections
 # lead even when a broad source like World Nuclear News out-publishes them.
+# Ordered by decision-relevance, not item count. Triad and DIB are the thesis;
+# Deals is comps and competitive intelligence and is easily missed when small;
+# Analysis sits above Allied because a strategic piece is more likely to change
+# thinking than allied procurement news. Tech and Nuclear Energy are option
+# value and sit last.
 SECTION_ORDER = ["triad", "dib", "deals", "budget", "primes",
-                 "nuclear_energy", "tech", "global", "thinktank"]
+                 "thinktank", "global", "tech", "nuclear_energy"]
 
 
 def esc(s):
