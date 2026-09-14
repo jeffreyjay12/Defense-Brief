@@ -135,6 +135,21 @@ def _scrub(data):
     return data
 
 
+def _strip_optional(data):
+    """Remove namespaced and media elements that carry no data we use.
+
+    WordPress feeds (Brookings) embed content:encoded, media:*, wfw:*, slash:*
+    and similar. They are the usual location of unescaped markup, and we take
+    only title/link/description/pubDate, so dropping them loses nothing.
+    """
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "ignore")
+    for ns in ("content", "media", "wfw", "slash", "dc", "atom", "sy", "georss", "geo"):
+        data = re.sub(rf"(?is)<{ns}:[^>\s]+.*?</{ns}:[^>]+>", "", data)
+        data = re.sub(rf"(?is)<{ns}:[^>]*?/>", "", data)
+    return data
+
+
 def _salvage(data):
     """Last resort: keep only well-formed <item> blocks.
 
@@ -209,7 +224,11 @@ def fetch(sources, limit_per_feed=40, log=print):
                 d = feedparser.parse(_scrub(raw_bytes))
                 log(f"      after scrub: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
-                salv = _salvage(_scrub(raw_bytes))
+                stripped = _scrub(_strip_optional(raw_bytes))
+                d = feedparser.parse(stripped)
+                log(f"      after namespace strip: {len(d.entries)} entries")
+            if getattr(d, "bozo", 0) and not d.entries:
+                salv = _salvage(_scrub(_strip_optional(raw_bytes)))
                 if salv:
                     d = feedparser.parse(salv)
                     log(f"      after salvage: {len(d.entries)} entries")
