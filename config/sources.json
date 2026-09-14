@@ -261,14 +261,14 @@
       "enabled": false
     },
     {
-      "name": "Brookings Defense",
-      "url": "https://www.brookings.edu/topic/defense-security/feed/",
+      "name": "Brookings",
+      "url": "https://www.brookings.edu/feed/",
       "kind": "analysis",
-      "weight": 1.0,
+      "weight": 0.8,
       "hint": [
         "thinktank"
       ],
-      "note": "verify URL on first run"
+      "note": "site-wide feed - Brookings publishes no topic-level feeds. Defense is a minority of output, so weight is low and the semantic pass does the filtering."
     },
     {
       "name": "Mitchell Institute",
