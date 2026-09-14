@@ -18,7 +18,10 @@ sys.path.insert(0, str(ROOT / "src"))
 from pipeline import fetch, build_digest          # noqa: E402
 from semantic import adjudicate                  # noqa: E402
 import market                                    # noqa: E402
-import mailfeed                                  # noqa: E402
+try:
+    import mailfeed                               # optional: newsletter ingestion
+except ImportError:
+    mailfeed = None
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -175,7 +178,8 @@ def main():
         print(f"fetching {len(sources)} feeds...")
         raw, errors = fetch(sources)
         # Newsletters arrive by mail because their sites refuse CI traffic.
-        raw += mailfeed.fetch(cfg)
+        if mailfeed is not None:
+            raw += mailfeed.fetch(cfg)
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
 
     prev = previous_digest()

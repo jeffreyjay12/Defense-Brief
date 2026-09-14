@@ -330,6 +330,61 @@
       ],
       "note": "superseded by the confirmed /rss/nnsa/ URL",
       "enabled": false
+    },
+    {
+      "name": "KippsDeSanto M&A",
+      "url": "https://www.kippsdesanto.com/feed/",
+      "kind": "analysis",
+      "weight": 1.5,
+      "hint": [
+        "deals",
+        "dib"
+      ],
+      "note": "weekly A&D M&A week-in-review - highest-value deals source found; verify URL"
+    },
+    {
+      "name": "OUSW A&S (acq.osd.mil)",
+      "url": "https://www.acq.osd.mil/rss/news.xml",
+      "kind": "news",
+      "weight": 1.4,
+      "hint": [
+        "dib",
+        "budget"
+      ],
+      "note": "Under Secretary for Acquisition & Sustainment - industrial base policy source; verify URL"
+    },
+    {
+      "name": "Defense Industry Daily",
+      "url": "https://www.defenseindustrydaily.com/feed/",
+      "kind": "news",
+      "weight": 1.1,
+      "hint": [
+        "dib",
+        "primes"
+      ],
+      "note": "procurement analysis; verify URL"
+    },
+    {
+      "name": "Defense-Aerospace",
+      "url": "https://www.defense-aerospace.com/feed/",
+      "kind": "news",
+      "weight": 1.0,
+      "hint": [
+        "primes",
+        "global"
+      ],
+      "note": "aggregator built on primary sources - govt, industry, think tanks; verify URL"
+    },
+    {
+      "name": "BusinessWire Defense",
+      "url": "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeEFpRWQ==",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "deals",
+        "primes"
+      ],
+      "note": "press-release wire - catches M&A, investor days, facility deals the trades miss; verify URL"
     }
   ]
 }
