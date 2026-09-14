@@ -96,6 +96,10 @@ def _from_stooq(sym):
                        d1=start.strftime("%Y%m%d"), d2=today.strftime("%Y%m%d"))
     raw = _get(url).decode("utf-8", "ignore")
     rows = [r for r in csv.DictReader(io.StringIO(raw)) if r.get("Close")]
+    if not rows:
+        # surface the body so a block/limit notice is distinguishable from a
+        # genuinely unknown ticker
+        raise ValueError("no rows; body=" + " ".join(raw.split())[:110])
     closes = []
     for r in rows:
         try:
