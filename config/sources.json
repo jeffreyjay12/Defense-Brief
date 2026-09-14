@@ -49,7 +49,8 @@
       "hint": [
         "dib"
       ],
-      "note": "404 on /rss/articles - trying /api/rss/articles; verify"
+      "note": "404 on /rss and /rss/articles; disabled pending a confirmed URL. NDIA content also surfaces via the other trades.",
+      "enabled": false
     },
     {
       "name": "War on the Rocks",
@@ -82,13 +83,13 @@
     },
     {
       "name": "NNSA",
-      "url": "https://www.energy.gov/nnsa/listings/nnsa-news/rss.xml",
+      "url": "https://www.energy.gov/nnsa/rss/articles.xml",
       "kind": "news",
       "weight": 1.3,
       "hint": [
         "triad"
       ],
-      "note": "404 on /feed - trying /rss.xml; verify"
+      "note": "pattern-matched from the working DOE Newsroom feed; verify"
     },
     {
       "name": "DOE Newsroom",
@@ -164,7 +165,8 @@
         "dib",
         "deals"
       ],
-      "note": "403 from CI - Substack blocks datacenter IPs. No known fix without a proxy; keep configured in case the block lifts."
+      "note": "403 from CI - now ingested via email (see config scoring.email.senders)",
+      "enabled": false
     },
     {
       "name": "Defense Tech & Acquisition",
@@ -175,7 +177,8 @@
         "tech",
         "budget"
       ],
-      "note": "403 from CI - Substack blocks datacenter IPs. No known fix without a proxy; keep configured in case the block lifts."
+      "note": "403 from CI - now ingested via email (see config scoring.email.senders)",
+      "enabled": false
     },
     {
       "name": "CSIS",
@@ -254,7 +257,8 @@
         "budget",
         "thinktank"
       ],
-      "note": "403 from CI - datacenter IP block, same as the Substacks. Kept in case it lifts."
+      "note": "403 from CI - now ingested via email (see config scoring.email.senders)",
+      "enabled": false
     },
     {
       "name": "Brookings Defense",
@@ -286,7 +290,8 @@
         "budget",
         "thinktank"
       ],
-      "note": "403 from CI - datacenter IP block, same as the Substacks. Kept in case it lifts."
+      "note": "403 from CI - now ingested via email (see config scoring.email.senders)",
+      "enabled": false
     },
     {
       "name": "Stimson Center",
@@ -317,7 +322,8 @@
       "hint": [
         "triad"
       ],
-      "note": "URL corrected Sept 2026 - confirm in build log"
+      "note": "404 on both tried paths; disabled pending a confirmed URL",
+      "enabled": false
     }
   ]
 }

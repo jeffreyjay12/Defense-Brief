@@ -162,7 +162,10 @@ def fetch(sources, limit_per_feed=40, log=print):
     if feedparser is None:
         raise RuntimeError("feedparser not installed")
     items, errors = [], []
-    for s in sources:
+    skipped = [s["name"] for s in sources if s.get("enabled") is False]
+    if skipped:
+        log(f"  ({len(skipped)} sources disabled: {', '.join(skipped[:6])})")
+    for s in [s for s in sources if s.get("enabled") is not False]:
         try:
             raw_bytes, http_err = _read(s["url"], log=log, want_error=True)
             if raw_bytes is None:
