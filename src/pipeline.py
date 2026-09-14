@@ -16,7 +16,7 @@ Design notes:
 import json, re, math, hashlib, datetime as dt
 from collections import defaultdict
 from html import entities as html_entities, unescape as html_unescape
-import urllib.request
+import ssl, urllib.request
 
 try:
     import feedparser
@@ -90,6 +90,12 @@ ACCEPT_VARIANTS = [
 def _read(url, timeout=25, log=None, want_error=False):
     """Fetch bytes ourselves so we can set a browser UA and repair the XML."""
     last_msg = None
+    # .mil hosts sign with the DoD PKI, which is absent from public CA bundles.
+    mil_ctx = None
+    if re.search(r"https://[^/]*\.mil/", url):
+        mil_ctx = ssl.create_default_context()
+        mil_ctx.check_hostname = False
+        mil_ctx.verify_mode = ssl.CERT_NONE
     for accept in ACCEPT_VARIANTS:
         try:
             req = urllib.request.Request(url, headers={
@@ -99,7 +105,7 @@ def _read(url, timeout=25, log=None, want_error=False):
                 "Accept-Encoding": "identity",
                 "Connection": "close",
             })
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            with urllib.request.urlopen(req, timeout=timeout, context=mil_ctx) as r:
                 data = r.read()
             break
         except Exception as ex:

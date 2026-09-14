@@ -196,13 +196,13 @@
     },
     {
       "name": "RAND",
-      "url": "https://www.rand.org/topics/national-security.xml",
+      "url": "https://www.rand.org/pubs.xml",
       "kind": "analysis",
       "weight": 1.1,
       "hint": [
         "thinktank"
       ],
-      "note": "confirmed from page source: .xml, not .rss.xml"
+      "note": "topic feed returned an empty stub; trying the publications feed. verify"
     },
     {
       "name": "Hudson Institute",
@@ -333,14 +333,14 @@
     },
     {
       "name": "KippsDeSanto M&A",
-      "url": "https://www.kippsdesanto.com/feed/",
+      "url": "https://www.kippsdesanto.com/wir-category/week-in-review/feed/",
       "kind": "analysis",
       "weight": 1.5,
       "hint": [
         "deals",
         "dib"
       ],
-      "note": "weekly A&D M&A week-in-review - highest-value deals source found; verify URL"
+      "note": "WordPress category feed for the week-in-review series; verify"
     },
     {
       "name": "OUSW A&S (acq.osd.mil)",
@@ -362,7 +362,8 @@
         "dib",
         "primes"
       ],
-      "note": "procurement analysis; verify URL"
+      "note": "403 from CI - datacenter IP block, same as the Substacks",
+      "enabled": false
     },
     {
       "name": "Defense-Aerospace",
@@ -373,7 +374,8 @@
         "primes",
         "global"
       ],
-      "note": "aggregator built on primary sources - govt, industry, think tanks; verify URL"
+      "note": "403 from CI - datacenter IP block, same as the Substacks",
+      "enabled": false
     },
     {
       "name": "BusinessWire Defense",
@@ -384,7 +386,8 @@
         "deals",
         "primes"
       ],
-      "note": "press-release wire - catches M&A, investor days, facility deals the trades miss; verify URL"
+      "note": "951-byte stub - feed ID guess was wrong; BusinessWire feed IDs are opaque",
+      "enabled": false
     }
   ]
 }
