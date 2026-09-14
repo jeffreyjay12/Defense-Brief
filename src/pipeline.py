@@ -81,19 +81,27 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
 XML_PREDEFINED = {"amp", "lt", "gt", "quot", "apos"}
 
 
-def _read(url, timeout=25, log=None):
+def _read(url, timeout=25, log=None, want_error=False):
     """Fetch bytes ourselves so we can set a browser UA and repair the XML."""
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+        req = urllib.request.Request(url, headers={
+            "User-Agent": UA,
+            "Accept": "application/rss+xml, application/xml, text/xml, */*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "identity",
+            "Cache-Control": "no-cache",
+            "Connection": "close",
+        })
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = r.read()
         if log:
             log(f"      _read ok: {len(data)} bytes, ctype={r.headers.get('Content-Type','?')}")
-        return data
+        return (data, None) if want_error else data
     except Exception as ex:
+        msg = f"{type(ex).__name__}: {str(ex)[:90]}"
         if log:
-            log(f"      _read FAILED: {type(ex).__name__}: {str(ex)[:90]}")
-        return None
+            log(f"      _read FAILED: {msg}")
+        return (None, msg) if want_error else None
 
 
 def _scrub(data):
@@ -153,8 +161,14 @@ def fetch(sources, limit_per_feed=40, log=print):
     items, errors = [], []
     for s in sources:
         try:
-            raw_bytes = _read(s["url"], log=log)
-            d = feedparser.parse(raw_bytes if raw_bytes else s["url"])
+            raw_bytes, http_err = _read(s["url"], log=log, want_error=True)
+            if raw_bytes is None:
+                # Do NOT hand the URL to feedparser here: it refetches, gets the
+                # HTML error page and reports a bogus XML parse error.
+                errors.append({"source": s["name"], "error": http_err or "fetch failed"})
+                log(f"  ! {s['name']}: {http_err or 'fetch failed'}")
+                continue
+            d = feedparser.parse(raw_bytes)
             if getattr(d, "bozo", 0) and not d.entries and raw_bytes:
                 log("      strict parse failed, trying scrub...")
                 d = feedparser.parse(_scrub(raw_bytes))
