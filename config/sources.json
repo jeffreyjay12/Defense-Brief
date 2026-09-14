@@ -83,13 +83,13 @@
     },
     {
       "name": "NNSA",
-      "url": "https://www.energy.gov/nnsa/rss/articles.xml",
+      "url": "https://www.energy.gov/rss/nnsa/2892342",
       "kind": "news",
       "weight": 1.3,
       "hint": [
         "triad"
       ],
-      "note": "pattern-matched from the working DOE Newsroom feed; verify"
+      "note": "found in the page source of energy.gov/nnsa/listings/nnsa-news - energy.gov serves feeds from a top-level /rss/<section>/<listing-id> route, not under the listing path"
     },
     {
       "name": "DOE Newsroom",
@@ -322,7 +322,7 @@
       "hint": [
         "triad"
       ],
-      "note": "404 on both tried paths; disabled pending a confirmed URL",
+      "note": "superseded by the confirmed /rss/nnsa/ URL",
       "enabled": false
     }
   ]

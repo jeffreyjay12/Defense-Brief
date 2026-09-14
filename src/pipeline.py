@@ -127,7 +127,36 @@ def _scrub(data):
     # Unescaped HTML inside element text produces "mismatched tag". Strip the
     # usual offenders that publishers leak into descriptions unescaped.
     data = re.sub(r"(?i)<(br|hr|img|meta|link|input)\b([^>]*?)(?<!/)>", r"<\1\2/>", data)
+    # A bare '<' followed by whitespace or punctuation is text, not a tag.
+    data = re.sub(r"<(?![/!?a-zA-Z])", "&lt;", data)
+    # Unterminated CDATA blocks
+    if data.count("<![CDATA[") > data.count("]]>"):
+        data += "]]>"
     return data
+
+
+def _salvage(data):
+    """Last resort: keep only well-formed <item> blocks.
+
+    A feed can be unparseable because of one malformed element while every other
+    item is fine. Rebuilding a minimal document from the items that do parse
+    recovers most of the content instead of discarding the whole feed.
+    """
+    if isinstance(data, bytes):
+        data = data.decode("utf-8", "ignore")
+    items = re.findall(r"(?is)<item\b.*?</item>", data)
+    if not items:
+        return None
+    good = []
+    for it in items:
+        # keep only items whose tags balance - cheap structural sanity check
+        if it.count("<") == it.count(">") and "<title" in it.lower():
+            good.append(it)
+    if not good:
+        return None
+    return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel>'
+            '<title>salvaged</title><link>http://example.invalid</link>'
+            '<description>salvaged</description>' + "".join(good) + "</channel></rss>")
 
 
 def first_para(html_text, maxlen=400):
@@ -179,6 +208,11 @@ def fetch(sources, limit_per_feed=40, log=print):
                 log("      strict parse failed, scrubbing...")
                 d = feedparser.parse(_scrub(raw_bytes))
                 log(f"      after scrub: {len(d.entries)} entries")
+            if getattr(d, "bozo", 0) and not d.entries:
+                salv = _salvage(_scrub(raw_bytes))
+                if salv:
+                    d = feedparser.parse(salv)
+                    log(f"      after salvage: {len(d.entries)} entries")
             if getattr(d, "bozo", 0) and not d.entries:
                 errors.append({"source": s["name"], "error": str(getattr(d, "bozo_exception", "parse error"))})
                 log(f"  ! {s['name']}: no entries ({getattr(d,'bozo_exception','')})")
