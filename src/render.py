@@ -204,7 +204,11 @@ def market_strip(rows, cfg):
     if not cells:
         return ""
     track = "".join(cells)
+    has_spark = any(len([p for p in (r.get("series") or []) if p is not None]) > 1
+                    for r in rows)
     note = "last close" + (f" &middot; {esc(asof)}" if asof else "")
+    if has_spark:
+        note += " &middot; trend = 5 sessions"
     if stale:
         note += " &middot; cached"
     return (f'<div class="mkt"><div class="mhead"><span>Markets</span><span>{note}</span></div>'
