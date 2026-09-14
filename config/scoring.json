@@ -696,10 +696,11 @@
     "max_tail_per_section": 18,
     "max_section_items": {
       "_default": 40,
-      "global": 14,
-      "tech": 16,
-      "nuclear_energy": 14,
-      "thinktank": 12
+      "global": 12,
+      "tech": 14,
+      "nuclear_energy": 12,
+      "thinktank": 12,
+      "budget": 18
     }
   },
   "clustering": {
@@ -945,6 +946,79 @@
     ],
     "fred_series": {
       "US10Y": "DGS10"
+    }
+  },
+  "email": {
+    "_comment": "Newsletter ingestion for sources that block CI (Substack, CSBA, AEI return 403 to datacenter IPs) or have no feed at all (ExchangeMonitor). Read-only IMAP against a dedicated Gmail account. Credentials come from MAIL_USER / MAIL_PASSWORD secrets - Gmail requires an APP PASSWORD with 2FA enabled, not the account password. Match is on the From header, so add a sender entry for each newsletter you subscribe to.",
+    "enabled": true,
+    "host": "imap.gmail.com",
+    "folder": "INBOX",
+    "lookback_days": 8,
+    "max_messages": 120,
+    "skip_link_hosts": [
+      "twitter.com",
+      "x.com",
+      "facebook.com",
+      "linkedin.com",
+      "instagram.com",
+      "youtube.com",
+      "substack.com/profile",
+      "mailchimp.com"
+    ],
+    "senders": {
+      "industrialbasealpha": {
+        "name": "Industrial Base Alpha",
+        "kind": "analysis",
+        "weight": 1.4,
+        "hint": [
+          "dib",
+          "deals"
+        ]
+      },
+      "defensetechandacquisition": {
+        "name": "Defense Tech & Acquisition",
+        "kind": "analysis",
+        "weight": 1.2,
+        "hint": [
+          "tech",
+          "budget"
+        ]
+      },
+      "csbaonline.org": {
+        "name": "CSBA",
+        "kind": "analysis",
+        "weight": 1.4,
+        "hint": [
+          "budget",
+          "thinktank"
+        ]
+      },
+      "aei.org": {
+        "name": "AEI Defense",
+        "kind": "analysis",
+        "weight": 1.0,
+        "hint": [
+          "budget",
+          "thinktank"
+        ]
+      },
+      "exchangemonitor": {
+        "name": "ExchangeMonitor",
+        "kind": "news",
+        "weight": 1.3,
+        "hint": [
+          "triad"
+        ]
+      },
+      "insidedefense": {
+        "name": "Inside Defense (alerts)",
+        "kind": "news",
+        "weight": 1.3,
+        "hint": [
+          "budget",
+          "dib"
+        ]
+      }
     }
   }
 }

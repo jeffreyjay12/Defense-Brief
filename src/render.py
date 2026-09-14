@@ -40,16 +40,23 @@ h1{margin:0;font-size:17px;letter-spacing:-.01em}
 .awards{background:var(--card);border:1px solid var(--line);border-radius:12px;
   padding:11px 14px;margin:0 0 16px}
 .awards h2{margin:0 0 7px;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
-.awrow{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);font-size:13.5px}
+.awrow{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px}
+@media (max-width:640px){
+  .awrow{flex-wrap:wrap;gap:4px 8px}
+  .awrow a{flex:1 1 100%;order:2}
+  .awrow .amt{order:1;text-align:left;min-width:0}
+  .awrow .sec{order:3;flex:1 1 100%}
+}
 .awrow:first-of-type{border-top:none}
 .awrow .amt{font-family:var(--mono);font-size:12px;color:var(--hot);min-width:62px;text-align:right;flex-shrink:0}
 .awrow a{color:var(--ink);text-decoration:none;flex:1}
 .awrow .sec{font-family:var(--mono);font-size:10.5px;color:var(--dim);flex-shrink:0}
 .mkt{border:1px solid var(--line);border-radius:10px;background:var(--card);
   overflow:hidden;margin:0 0 14px;position:relative}
-.mkt .mhead{display:flex;justify-content:space-between;align-items:baseline;
+.mkt .mhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
   padding:7px 12px 3px;font-family:var(--mono);font-size:10px;color:var(--dim);
-  text-transform:uppercase;letter-spacing:.07em}
+  text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.mkt .mhead .note{text-transform:none;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
 .mtrack{display:flex;gap:22px;padding:4px 12px 9px;white-space:nowrap;
   animation:mscroll 70s linear infinite;width:max-content}
 .mkt:hover .mtrack{animation-play-state:paused}
@@ -111,7 +118,9 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
   margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line)}
 """
 
-SECTION_ORDER = ["triad", "dib", "budget", "primes", "deals",
+# Fixed priority order - deliberately NOT by item count. The thesis sections
+# lead even when a broad source like World Nuclear News out-publishes them.
+SECTION_ORDER = ["triad", "dib", "deals", "budget", "primes",
                  "nuclear_energy", "tech", "global", "thinktank"]
 
 
@@ -206,12 +215,12 @@ def market_strip(rows, cfg):
     track = "".join(cells)
     has_spark = any(len([p for p in (r.get("series") or []) if p is not None]) > 1
                     for r in rows)
-    note = "last close" + (f" &middot; {esc(asof)}" if asof else "")
+    note = f"close {esc(asof)}" if asof else "last close"
     if has_spark:
-        note += " &middot; trend = 5 sessions"
+        note += " &middot; 5-session trend"
     if stale:
         note += " &middot; cached"
-    return (f'<div class="mkt"><div class="mhead"><span>Markets</span><span>{note}</span></div>'
+    return (f'<div class="mkt"><div class="mhead"><span>Markets</span><span class="note">{note}</span></div>'
             f'<div class="mtrack">{track}{track}</div></div>')
 
 

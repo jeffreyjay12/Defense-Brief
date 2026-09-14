@@ -107,16 +107,19 @@
       "weight": 1.2,
       "hint": [
         "triad"
-      ]
+      ],
+      "enabled": false,
+      "note": "no RSS reference anywhere in the page source - STRATCOM publishes no feed. Command news surfaces via DoD Releases and the trades."
     },
     {
-      "name": "AFGSC",
-      "url": "https://www.afgsc.af.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1010&max=20",
+      "name": "Air Force (af.mil)",
+      "url": "https://www.af.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1&max=20",
       "kind": "news",
       "weight": 1.2,
       "hint": [
         "triad"
-      ]
+      ],
+      "note": "AFGSC has no dedicated feed - its page links only af.mil/rss/. Using the service-wide feed instead; verify, and disable if it returns 0 items."
     },
     {
       "name": "GAO Reports",
@@ -198,7 +201,8 @@
       "weight": 1.1,
       "hint": [
         "thinktank"
-      ]
+      ],
+      "note": "confirmed from page source: .xml, not .rss.xml"
     },
     {
       "name": "Hudson Institute",

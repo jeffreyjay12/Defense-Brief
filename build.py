@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from pipeline import fetch, build_digest          # noqa: E402
 from semantic import adjudicate                  # noqa: E402
 import market                                    # noqa: E402
+import mailfeed                                  # noqa: E402
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -27,6 +28,67 @@ PUB = ROOT / "public"
 def load(p):
     with open(p) as f:
         return json.load(f)
+
+
+def previous_digest():
+    """The last published digest, or []. Used both for the new/old diff and to
+    retain stories that have rolled off their source feed."""
+    import urllib.request
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo and "/" in repo:
+        owner, name = repo.split("/", 1)
+        url = f"https://{owner}.github.io/{name}/digest.json"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "DefenseBrief"})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except Exception as ex:
+            print(f"previous digest unavailable ({type(ex).__name__})")
+    local = DATA / "digest_prev.json"
+    if local.exists():
+        try:
+            return load(local)
+        except Exception:
+            pass
+    return []
+
+
+def carry_forward(digest, prev, cfg):
+    """Re-add still-fresh items that have left their source feed."""
+    import datetime as _dt
+    now = _dt.datetime.now(_dt.timezone.utc)
+    rc = cfg["recency"]
+    have = {d["id"] for d in digest}
+    kept = 0
+    for p in prev:
+        if p.get("id") in have or not p.get("published"):
+            continue
+        try:
+            pub = _dt.datetime.fromisoformat(p["published"])
+            if pub.tzinfo is None:
+                pub = pub.replace(tzinfo=_dt.timezone.utc)
+        except Exception:
+            continue
+        age = max((now - pub).total_seconds() / 86400.0, 0)
+        max_age = (rc["analysis_max_age_days"] if p.get("is_analysis")
+                   else rc["news_max_age_days"])
+        if age > max_age:
+            continue
+        decay = (rc["analysis_decay_per_day"] if p.get("is_analysis")
+                 else rc["news_decay_per_day"])
+        raw = p.get("score_raw")
+        if raw is None:
+            continue
+        p = dict(p)
+        p["score"] = round(raw - age * decay, 2)
+        p["age_days"] = round(age, 2)
+        p["carried"] = True
+        digest.append(p)
+        kept += 1
+    if kept:
+        print(f"  carried forward {kept} items still inside the age window")
+    digest.sort(key=lambda x: x["score"], reverse=True)
+    return digest
 
 
 def previous_ids():
@@ -112,10 +174,14 @@ def main():
     else:
         print(f"fetching {len(sources)} feeds...")
         raw, errors = fetch(sources)
+        # Newsletters arrive by mail because their sites refuse CI traffic.
+        raw += mailfeed.fetch(cfg)
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
 
-    prev_ids = previous_ids()
+    prev = previous_digest()
+    prev_ids = {d.get("id") for d in prev if d.get("id")}
     digest, filtered = build_digest(raw, cfg)
+    digest = carry_forward(digest, prev, cfg)
     digest = adjudicate(digest, cfg)
     new_ids = {d["id"] for d in digest if d["id"] not in prev_ids} if prev_ids else set()
     (DATA / "digest.json").write_text(json.dumps(digest, indent=1))

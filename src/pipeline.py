@@ -288,7 +288,13 @@ def fetch(sources, limit_per_feed=40, log=print):
                     "published": published.isoformat(),
                 })
                 n += 1
-            log(f"  + {s['name']}: {n}")
+            if n == 0:
+                log(f"  !! {s['name']}: fetched OK but produced 0 items "
+                    f"({len(raw_bytes)} bytes) - likely a stub or wrong feed URL")
+                errors.append({"source": s["name"],
+                               "error": f"0 items from {len(raw_bytes)} bytes (silent empty)"})
+            else:
+                log(f"  + {s['name']}: {n}")
         except Exception as ex:  # noqa: BLE001
             errors.append({"source": s["name"], "error": str(ex)})
             log(f"  ! {s['name']}: {ex}")
