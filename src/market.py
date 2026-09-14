@@ -16,10 +16,13 @@ Sources, in order:
 
 Never raises. A missing strip is a cosmetic loss; a failed build is not.
 """
-import csv, io, json, time, urllib.request, urllib.parse, datetime as dt
+import csv, io, json, os, time, urllib.request, urllib.parse, datetime as dt
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+TWELVE = ("https://api.twelvedata.com/time_series?symbol={syms}&interval=1day"
+          "&outputsize=5&apikey={key}")
+
 YAHOO_HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
 YAHOO = "https://{host}/v8/finance/chart/{sym}?interval=1d&range=5d"
 STOOQ = "https://stooq.com/q/d/l/?s={sym}&d1={d1}&d2={d2}&i=d"
@@ -115,12 +118,104 @@ def _from_stooq(sym):
             "series": [c for _, c in closes]}
 
 
+def _from_twelve(symbols, key, log=print):
+    """Batch fetch. Returns {symbol: row}. Free keyless endpoints (Yahoo, Stooq)
+    both refuse GitHub's datacenter IPs - 429 and a bot page respectively - so a
+    keyed service is the only reliable path from CI."""
+    out = {}
+    batch = 8
+    for i in range(0, len(symbols), batch):
+        chunk = symbols[i:i + batch]
+        url = TWELVE.format(syms=",".join(urllib.parse.quote(s) for s in chunk), key=key)
+        try:
+            d = json.loads(_get(url, timeout=25))
+        except Exception as ex:
+            log(f"      twelvedata batch failed: {type(ex).__name__} {str(ex)[:60]}")
+            continue
+        # single-symbol calls return the object directly; batches key by symbol
+        payloads = {chunk[0]: d} if "values" in d else d
+        for sym, p in payloads.items():
+            if not isinstance(p, dict):
+                continue
+            if p.get("status") == "error":
+                log(f"      {sym}: {str(p.get('message'))[:70]}")
+                continue
+            vals = p.get("values") or []
+            closes = []
+            for v in reversed(vals):
+                try:
+                    closes.append((v.get("datetime"), float(v.get("close"))))
+                except (TypeError, ValueError):
+                    continue
+            if not closes:
+                continue
+            out[sym] = {"symbol": sym, "price": closes[-1][1],
+                        "prev": closes[-2][1] if len(closes) > 1 else None,
+                        "date": closes[-1][0], "src": "twelvedata",
+                        "series": [c for _, c in closes[-5:]]}
+        time.sleep(8)   # stay under the 8 requests/minute free-tier limit
+    return out
+
+
+FRED = ("https://api.stlouisfed.org/fred/series/observations?series_id={sid}"
+        "&api_key={key}&file_type=json&sort_order=desc&limit=7")
+
+
+def _from_fred(cfg, log=print):
+    """Treasury yields. Returns {symbol: row}."""
+    key = os.environ.get("FRED_API_KEY")
+    series = (cfg.get("market", {}) or {}).get("fred_series", {})
+    if not key or not series:
+        return {}
+    out = {}
+    for sym, sid in series.items():
+        try:
+            d = json.loads(_get(FRED.format(sid=sid, key=key), timeout=20))
+            obs = [o for o in d.get("observations", []) if o.get("value") not in (None, ".")]
+            if not obs:
+                continue
+            vals = [(o["date"], float(o["value"])) for o in obs][:5][::-1]
+            out[sym] = {"symbol": sym, "price": vals[-1][1],
+                        "prev": vals[-2][1] if len(vals) > 1 else None,
+                        "date": vals[-1][0], "src": "fred",
+                        "series": [v for _, v in vals]}
+        except Exception as ex:
+            log(f"      fred {sym}: {type(ex).__name__} {str(ex)[:50]}")
+    return out
+
+
 def fetch(cfg, cache_path=None, log=print):
     mk = cfg.get("market", {})
     if not mk.get("enabled", True):
         return []
     symbols = mk.get("symbols", [])
     out, failed = [], []
+
+    # Preferred path: keyed service. Falls through to the free endpoints if no
+    # key is configured, which works locally even though it fails in CI.
+    fred_rows = _from_fred(cfg, log=log)
+    equities = [s for s in symbols if s not in fred_rows]
+
+    key = os.environ.get("TWELVEDATA_API_KEY")
+    if key:
+        got = _from_twelve(equities, key, log=log)
+        got.update(fred_rows)
+        if got:
+            rows = [got[s] for s in symbols if s in got]
+            missing = [s for s in symbols if s not in got]
+            if missing:
+                log(f"  market: {len(rows)}/{len(symbols)} fetched, missing: {', '.join(missing[:8])}")
+            else:
+                log(f"  market: {len(rows)}/{len(symbols)} fetched")
+            if cache_path and rows:
+                try:
+                    cache_path.write_text(json.dumps(
+                        {"fetched": dt.datetime.now(dt.timezone.utc).isoformat(),
+                         "rows": rows}, indent=1))
+                except Exception:
+                    pass
+            return rows
+        log("  market: twelvedata returned nothing, trying free sources")
     diag = []
     for sym in symbols:
         row = None

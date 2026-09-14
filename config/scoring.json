@@ -863,7 +863,7 @@
     ]
   },
   "market": {
-    "_comment": "Closing prices for the ticker strip. Order here is display order. Yahoo chart endpoint primary, Stooq fallback, cached last-known if both fail. Set enabled=false to remove the strip.",
+    "_comment": "Closing prices. Twelve Data (TWELVEDATA_API_KEY) is the working source from CI - Yahoo returns 429 and Stooq serves a bot page to datacenter IPs. FRED (FRED_API_KEY) supplies treasury yields, which are not on equity free tiers. SPY/QQQ stand in for the S&P and Nasdaq indices, since free tiers cover ETFs but not indices. Both keys optional; without them the strip is simply omitted.",
     "enabled": true,
     "delay_seconds": 0.25,
     "groups": [
@@ -900,9 +900,9 @@
         "symbols": [
           "XAR",
           "ITA",
-          "^GSPC",
-          "^IXIC",
-          "^TNX"
+          "SPY",
+          "QQQ",
+          "US10Y"
         ]
       }
     ],
@@ -927,15 +927,17 @@
       "BA",
       "XAR",
       "ITA",
-      "^GSPC",
-      "^IXIC",
-      "^TNX"
+      "SPY",
+      "QQQ",
+      "US10Y"
     ],
     "yield_symbols": [
-      "^TNX",
-      "^TYX",
-      "^FVX",
-      "^IRX"
-    ]
+      "US10Y",
+      "US30Y",
+      "US2Y"
+    ],
+    "fred_series": {
+      "US10Y": "DGS10"
+    }
   }
 }
