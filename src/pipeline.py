@@ -317,6 +317,7 @@ def gate(items, cfg):
     # An entity name is itself proof of being in-domain. Without this, items
     # like "Sentinel ICBM clears Milestone B" fail the generic keyword gate.
     terms = list(g["terms"]) + ent["tier1"] + ent["tier2"] + ent["tier3"]
+    trusted = set(g.get("trusted_sources", []))
     kept, filtered = [], []
     for it in items:
         # Hard rejects first. Human-interest features legitimately contain
@@ -335,7 +336,7 @@ def gate(items, cfg):
             continue
         blob = f"{it['title']} {it['summary']}"
         h = hits(blob, terms)
-        if len(h) >= g.get("min_terms", 1):
+        if it.get("source") in trusted or len(h) >= g.get("min_terms", 1):
             it["_gate_hits"] = h[:6]
             kept.append(it)
         else:

@@ -1,7 +1,7 @@
 {
   "_comment": "Tune here, not in code. Weights are additive points unless noted. Run `python build.py --explain` to see why any item scored what it did.",
   "gate": {
-    "_comment": "Permissive by design. An item must hit ONE of these to enter at all. Everything rejected is written to data/filtered.json for review.",
+    "_comment": "Permissive by design. An item must hit ONE of these to enter at all. Everything rejected is written to data/filtered.json for review. trusted_sources bypass the keyword gate: these feeds are domain-specific by construction (we only query EDGAR for defence companies; an IR feed carries one company's news), so items like '10-Q Quarterly Report' should not be dropped for lacking generic defence vocabulary. The relevance pass still judges whether each item matters.",
     "min_terms": 1,
     "terms": [
       "defense",
@@ -93,6 +93,22 @@
       "escalation",
       "force structure",
       "posture"
+    ],
+    "trusted_sources": [
+      "SEC EDGAR",
+      "Lockheed Martin IR",
+      "Northrop Grumman IR",
+      "RTX IR",
+      "General Dynamics IR",
+      "L3Harris IR",
+      "HII IR",
+      "Howmet IR",
+      "TransDigm IR",
+      "BWXT IR",
+      "Curtiss-Wright IR",
+      "KippsDeSanto M&A",
+      "NNSA",
+      "Inside Defense INSIDER"
     ]
   },
   "magnitude": {
@@ -472,32 +488,33 @@
       ]
     },
     "primes": {
-      "label": "Primes",
+      "label": "Prime Demand Signal",
       "priority": 4,
       "terms": [
-        "earnings",
-        "earnings guidance",
-        "full-year guidance",
-        "raised guidance",
-        "quarterly results",
+        "capacity expansion",
+        "production rate",
+        "new facility",
+        "facility expansion",
+        "plant opening",
+        "supplier investment",
+        "second source",
+        "onshoring",
+        "insourcing",
+        "make versus buy",
+        "vertical integration",
         "backlog",
+        "book-to-bill",
+        "throughput",
+        "supply constraint",
+        "lead time",
+        "earnings",
+        "guidance",
         "restructuring",
         "layoffs",
-        "job cuts",
-        "plant opening",
-        "new facility",
-        "ceo",
-        "chief executive",
-        "shares rose",
-        "shares fell",
-        "revenue growth",
-        "operating margin",
-        "book-to-bill",
         "investor day",
-        "dividend",
-        "buyback",
-        "spin off",
-        "segment results"
+        "segment results",
+        "ramp",
+        "surge production"
       ]
     },
     "tech": {
@@ -562,7 +579,11 @@
         "seeker",
         "radar site",
         "missile warning",
-        "tracking satellite"
+        "tracking satellite",
+        "counter-drone",
+        "c-uas summit",
+        "interagency summit",
+        "task force"
       ]
     },
     "nuclear_energy": {
@@ -612,8 +633,9 @@
       "terms": [
         "acquires",
         "acquired by",
-        "to acquire",
         "acquisition of",
+        "agreed to acquire",
+        "completes acquisition",
         "merger",
         "m&a",
         "take-private",
@@ -625,17 +647,22 @@
         "ipo",
         "antitrust",
         "hart-scott",
-        "department of justice sued",
         "ftc challenge",
         "valuation",
         "funding round",
         "series a",
         "series b",
         "series c",
+        "series d",
         "raises $",
         "raised $",
         "stake in",
-        "bid for"
+        "majority stake",
+        "minority stake",
+        "bid for",
+        "portfolio company",
+        "sponsor-backed",
+        "recapitalization"
       ]
     },
     "thinktank": {
@@ -690,7 +717,13 @@
         "defence ministry",
         "defense ministry",
         "shipyard capacity abroad",
-        "production rate"
+        "production rate",
+        "reverse-engineer",
+        "captured",
+        "seized",
+        "sabotage",
+        "espionage",
+        "reverse engineering"
       ]
     }
   },
@@ -809,7 +842,55 @@
       "housing",
       "child care",
       "health care:",
-      "veterans benefits"
+      "veterans benefits",
+      "week in photos",
+      "photos",
+      "trophy",
+      "receives",
+      "honored",
+      "squadron",
+      "wing commander",
+      "change of responsibility",
+      "airman",
+      "airmen",
+      "assumes command",
+      "welcomes",
+      "visits",
+      "tours",
+      "celebrates",
+      "recognizes",
+      "showcases",
+      "hosts 2nd",
+      "summit to strengthen",
+      "scholarship",
+      "community",
+      "donates",
+      "donation",
+      "volunteer",
+      "sustainability report",
+      "named to",
+      "great place to work",
+      "anniversary",
+      "earth day",
+      "employee resource",
+      "diversity report",
+      "charitable",
+      "stem outreach",
+      "food bank",
+      "shares rise",
+      "shares fall",
+      "shares rose",
+      "shares fell",
+      "price target",
+      "analyst upgrade",
+      "analyst downgrade",
+      "stock jumps",
+      "stock slides",
+      "beats estimates",
+      "misses estimates",
+      "buy rating",
+      "sell rating",
+      "outperform"
     ],
     "summary_terms": [
       "[sponsored]",
@@ -840,12 +921,12 @@
       "2": 2,
       "3": 8
     },
-    "thesis": "You are filtering a news brief for a private-equity investor whose thesis is the DEFENSE INDUSTRIAL BASE - specifically sub-tier suppliers (Tier 2-4) of engineered components, specialty processing, and accredited testing, with a focus on the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites such as Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings), rad-hard microelectronics, and commercial/installation nuclear power as a secondary market.\n\nWhat matters: qualification barriers, sole-source positions, production capacity and bottlenecks, supplier-base health, contract awards that signal demand, M&A comps, and the hardware demand that AI and autonomy pull through (compute, sensors, power, packaging, thermal).\n\nWhat does NOT matter: geopolitics and foreign policy commentary, personnel moves, ceremonies, software and IT applications with no hardware implication, general military operations, and allied political relations.\n\nCalibration notes:\n- Threat and capability assessments of peer adversaries (Chinese or Russian modernisation, Taiwan contingency, Pacific posture, munitions consumption rates in Ukraine) are relevance 2: they are the demand driver behind procurement volumes, stockpile targets and capacity investment. Rate them 3 when they draw explicit conclusions about force structure, industrial capacity or weapons inventories.\n- Strategic analysis where the US is a party - adversary capability, contingency planning, deterrence posture, alliance burden-sharing - is relevance 2, or 3 where it reaches conclusions about force structure, weapons inventories or industrial capacity. Other countries' internal politics and third-party diplomacy, with no bearing on US posture or procurement, are relevance 0.\n- Cyber splits two ways. Requirements flowed DOWN to suppliers (CMMC, NIST 800-171, supply-chain security mandates, facility clearance rules) are relevance 3 and belong in the industrial base section: they are qualification barriers our targets must clear. The Department's OWN IT - CIO announcements, network modernisation, offensive cyber doctrine, intelligence-community tooling - is relevance 0.\n- Anything about schools, education, healthcare, personnel policy, facilities management, chemical or border security, or disaster response is relevance 0 regardless of which agency published it. GAO in particular audits the entire federal government.\n- Nuclear enterprise oversight and DOE contracting ARE relevant (relevance 2-3) because they bear on how the weapons complex buys from suppliers.\n- Summit diplomacy, alliance politics, leadership changes and regional pacts are relevance 0 unless the argument reaches explicit conclusions about force structure, weapons inventories, industrial capacity or procurement.",
+    "thesis": "You are filtering a news brief for an investor building a HOLDING COMPANY of small private businesses deep in the US defense industrial base - Tier 2 to 4 suppliers of engineered components, specialty processing, and accredited testing, bought and consolidated into a durable platform of strategic assets. The purpose of this brief is twofold: (1) become a subject-matter expert on the industry, and (2) find and evaluate acquisition targets.\n\nCore focus: the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites including Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings, coatings), rad-hard microelectronics and hi-rel interconnect, and commercial and installation nuclear power as a second end market.\n\nRate HIGHEST the things that inform buying or valuing a small supplier: qualification barriers and certifications, sole-source and second-source decisions, production capacity and bottlenecks, supplier-base health and consolidation, DPA Title III and industrial base policy, M&A involving sub-tier suppliers and the sponsors doing it, contract awards that signal sustained demand, skilled-labour and workforce constraints, and prime commitments that pull volume through the supply chain.\n\nRate LOW or ZERO: geopolitics and foreign policy commentary, personnel moves, ceremonies and public affairs, software and IT with no hardware implication, general military operations, equity-market and share-price news, and anything about a company's stock rather than its production.\n\nCalibration notes:\n- Threat and capability assessments of peer adversaries are relevance 2, or 3 where they reach conclusions about force structure, weapons inventories or industrial capacity - they are the demand driver behind procurement volumes.\n- Other countries' internal politics and third-party diplomacy are relevance 0.\n- Cyber requirements flowed DOWN to suppliers (CMMC, NIST 800-171, facility clearances) are relevance 3 and belong in the industrial base section - they are qualification barriers our targets must clear. The Department's own IT is relevance 0.\n- Schools, healthcare, personnel policy, facilities management, chemical or border security and disaster response are relevance 0 regardless of which agency published it.\n- Summit diplomacy and alliance politics are relevance 0 unless they reach explicit conclusions about force structure, inventories, industrial capacity or procurement.",
     "section_guide": {
       "triad": "EVENTS in the US nuclear enterprise: Sentinel/ICBM, Columbia/Trident/SLBM, B-21, LRSO, SLCM-N, warheads, NNSA sites (Pantex, Y-12, Kansas City, Los Alamos, Livermore, Savannah River). Production milestones, tests, contract awards, programme decisions, facility news. Commentary and research ABOUT these programmes is analysis, not this section.",
       "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances. Contract awards for components, materials, energetics and capacity belong here.",
       "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines.",
-      "primes": "Corporate news about ESTABLISHED major contractors (Lockheed, Northrop, RTX, Boeing, GD, L3Harris, BAE, HII, Leidos) that has no other subject home: earnings, guidance, backlog, restructuring, layoffs, executives, investor days, export bans. NOT contract awards - those go to the subject the contract is about. NOT funding rounds or M&A (deals). NOT product tests or programme milestones. NOT startups.",
+      "primes": "What the PRIMES are doing that implies demand for the tier beneath them: capacity expansions, new facilities, production-rate changes, backlog, supplier investment, make-vs-buy shifts, restructuring that moves work, earnings commentary on throughput or supply constraints. The question is always what this means for sub-tier suppliers, not how the company's stock is doing. NOT contract awards (those go to the subject), NOT M&A (deals), NOT ownership or trading news.",
       "deals": "Ownership and capital transactions: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, AND startup funding rounds of any size (seed through late stage). A company raising money belongs here, not in primes.",
       "nuclear_energy": "US commercial and defence-installation nuclear: reactors, restarts, SMRs and microreactors, fuel cycle and enrichment, utility and hyperscaler power deals, DOE loans, NRC licensing. Foreign reactor construction, foreign utility news and general industry promotion with no US supply-chain or technology link is relevance 0.",
       "tech": "Enabling HARDWARE and the systems that pull it: rad-hard microelectronics, trusted foundry, packaging, sensors, seekers, power, thermal, autonomy and unmanned platforms, directed energy, space hardware. AI and software only when they drive hardware demand - an AI tool for staff work, chatbot adoption or IT modernisation is relevance 0.",
@@ -1033,5 +1114,38 @@
         ]
       }
     }
+  },
+  "edgar": {
+    "_comment": "DISABLED. Built for ownership and control events (SC 13D, S-4), which is trading-adjacent intelligence - not the use case. This brief reads companies for demand signal, capacity moves and comps, and filings do not carry those: the IR feeds do. Kept in the codebase in case a filings need emerges; set enabled=true and pick forms. Requires SEC_USER_AGENT.",
+    "enabled": false,
+    "weight": 1.0,
+    "lookback_days": 14,
+    "delay_seconds": 0.3,
+    "forms": [
+      "SC 13D",
+      "SC 14D1",
+      "S-4",
+      "25-NSE"
+    ],
+    "tickers": [
+      "LMT",
+      "NOC",
+      "RTX",
+      "GD",
+      "LHX",
+      "HII",
+      "LDOS",
+      "HWM",
+      "TDG",
+      "HEI",
+      "CW",
+      "DCO",
+      "MOG.A",
+      "AIN",
+      "BWXT",
+      "LEU",
+      "TXT",
+      "DRS"
+    ]
   }
 }

@@ -132,6 +132,8 @@ Items:
                 if isinstance(rel, (int, float)):
                     delta = sem.get("deltas", {}).get(str(int(rel)), 0)
                     d["score"] = round(d["score"] + delta, 2)
+                    if "score_raw" in d:
+                        d["score_raw"] = round(d["score_raw"] + delta, 2)
                     d["relevance"] = int(rel)
                     d["why"] = d.get("why", []) + [f"relevance {int(rel)} {delta:+g}"]
                     adjusted += 1

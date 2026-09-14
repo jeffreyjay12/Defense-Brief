@@ -22,6 +22,10 @@ try:
     import mailfeed                               # optional: newsletter ingestion
 except ImportError:
     mailfeed = None
+try:
+    import edgar                                  # optional: SEC filings
+except ImportError:
+    edgar = None
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -180,6 +184,8 @@ def main():
         # Newsletters arrive by mail because their sites refuse CI traffic.
         if mailfeed is not None:
             raw += mailfeed.fetch(cfg)
+        if edgar is not None:
+            raw += edgar.fetch(cfg)
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
 
     prev = previous_digest()

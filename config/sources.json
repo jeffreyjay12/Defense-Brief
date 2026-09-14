@@ -115,11 +115,12 @@
       "name": "Air Force (af.mil)",
       "url": "https://www.af.mil/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=1&max=20",
       "kind": "news",
-      "weight": 1.2,
+      "weight": 0.7,
       "hint": [
         "triad"
       ],
-      "note": "AFGSC has no dedicated feed - its page links only af.mil/rss/. Using the service-wide feed instead; verify, and disable if it returns 0 items."
+      "note": "service-wide public affairs - trophies, photo features, base visits. One useful item in two builds. Air-leg news comes through the trades and Mitchell Institute instead.",
+      "enabled": false
     },
     {
       "name": "GAO Reports",
@@ -388,6 +389,116 @@
       ],
       "note": "951-byte stub - feed ID guess was wrong; BusinessWire feed IDs are opaque",
       "enabled": false
+    },
+    {
+      "name": "Lockheed Martin IR",
+      "url": "https://news.lockheedmartin.com/rss",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "Northrop Grumman IR",
+      "url": "https://news.northropgrumman.com/rss",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "RTX IR",
+      "url": "https://www.rtx.com/rss/news",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "General Dynamics IR",
+      "url": "https://www.gd.com/rss/news",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "L3Harris IR",
+      "url": "https://www.l3harris.com/rss/newsroom",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "HII IR",
+      "url": "https://newsroom.hii.com/rss",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "Howmet IR",
+      "url": "https://investors.howmet.com/rss/news-releases.xml",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "TransDigm IR",
+      "url": "https://investors.transdigm.com/rss/news-releases.xml",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "BWXT IR",
+      "url": "https://investors.bwxt.com/rss/news-releases.xml",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
+    },
+    {
+      "name": "Curtiss-Wright IR",
+      "url": "https://investors.curtisswright.com/rss/news-releases.xml",
+      "kind": "news",
+      "weight": 0.9,
+      "hint": [
+        "primes",
+        "deals"
+      ],
+      "note": "company IR feed - verify URL on first run"
     }
   ]
 }
