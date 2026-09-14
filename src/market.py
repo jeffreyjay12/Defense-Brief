@@ -118,22 +118,38 @@ def _from_stooq(sym):
             "series": [c for _, c in closes]}
 
 
+TWELVE_SYMBOL = {"MOG-A": "MOG.A", "BRK-B": "BRK.B"}
+
+
 def _from_twelve(symbols, key, log=print):
     """Batch fetch. Returns {symbol: row}. Free keyless endpoints (Yahoo, Stooq)
     both refuse GitHub's datacenter IPs - 429 and a bot page respectively - so a
     keyed service is the only reliable path from CI."""
     out = {}
-    batch = 8
+    batch = int(os.environ.get("TWELVEDATA_BATCH", "8"))
+    pause = float(os.environ.get("TWELVEDATA_PAUSE", "62"))
     for i in range(0, len(symbols), batch):
         chunk = symbols[i:i + batch]
-        url = TWELVE.format(syms=",".join(urllib.parse.quote(s) for s in chunk), key=key)
-        try:
-            d = json.loads(_get(url, timeout=25))
-        except Exception as ex:
-            log(f"      twelvedata batch failed: {type(ex).__name__} {str(ex)[:60]}")
+        wire = [TWELVE_SYMBOL.get(s, s) for s in chunk]
+        back = {TWELVE_SYMBOL.get(s, s): s for s in chunk}
+        url = TWELVE.format(syms=",".join(urllib.parse.quote(w) for w in wire), key=key)
+        d = None
+        for attempt in range(3):
+            try:
+                d = json.loads(_get(url, timeout=30))
+                break
+            except Exception as ex:
+                code = getattr(ex, "code", None)
+                if code == 429 and attempt < 2:
+                    log(f"      rate limited, waiting {pause:.0f}s (attempt {attempt+1})")
+                    time.sleep(pause)
+                    continue
+                log(f"      twelvedata batch failed: {type(ex).__name__} {str(ex)[:60]}")
+                break
+        if d is None:
             continue
         # single-symbol calls return the object directly; batches key by symbol
-        payloads = {chunk[0]: d} if "values" in d else d
+        payloads = {wire[0]: d} if "values" in d else d
         for sym, p in payloads.items():
             if not isinstance(p, dict):
                 continue
@@ -149,11 +165,15 @@ def _from_twelve(symbols, key, log=print):
                     continue
             if not closes:
                 continue
+            sym = back.get(sym, sym)
             out[sym] = {"symbol": sym, "price": closes[-1][1],
                         "prev": closes[-2][1] if len(closes) > 1 else None,
                         "date": closes[-1][0], "src": "twelvedata",
                         "series": [c for _, c in closes[-5:]]}
-        time.sleep(8)   # stay under the 8 requests/minute free-tier limit
+        # The minute allowance is consumed per symbol, so a full batch needs a
+        # full minute before the next one.
+        if i + batch < len(symbols):
+            time.sleep(pause)
     return out
 
 
