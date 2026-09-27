@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from pipeline import fetch, build_digest          # noqa: E402
-from semantic import adjudicate, assess          # noqa: E402
+from semantic import adjudicate                  # noqa: E402
 import market                                    # noqa: E402
 try:
     import mailfeed                               # optional: newsletter ingestion
@@ -230,10 +230,9 @@ def main():
         return
 
     market_rows = market.fetch(cfg, cache_path=DATA / 'market.json')
-    assessments = assess(digest, cfg)
     summary = ai_summary(digest, cfg)
     html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids,
-                  market_rows=market_rows, assessments=assessments)
+                  market_rows=market_rows)
     (PUB / "index.html").write_text(html)
     (PUB / "manifest.json").write_text(MANIFEST)
     (PUB / "icon.svg").write_text(ICON)
