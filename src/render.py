@@ -105,6 +105,13 @@ section[data-sec="thinktank"] .sh{border-color:#9a8fd6}
 .tag.dib{color:var(--dib);border-color:var(--dib)}
 .tag.an{color:var(--accent);border-color:var(--accent)}
 .tag.new{color:var(--new);border-color:var(--new);font-weight:700}
+.tag.prim{color:#7aa7e8;border-color:#7aa7e8}
+.tag.rel{color:#c58bd6;border-color:#c58bd6}
+.tag.bids{color:var(--hot);border-color:var(--hot);font-weight:700}
+.assess{background:var(--card2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:11px 14px;margin:10px 0 4px;font-size:14px;line-height:1.5;color:var(--ink)}
+.assess b{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);
+  display:block;margin-bottom:5px;font-weight:700}
 details.tail{margin-top:8px}
 details.tail summary{cursor:pointer;color:var(--dim);font-size:12.5px;
   font-family:var(--mono);padding:7px 2px;list-style:none}
@@ -230,10 +237,11 @@ def market_strip(rows, cfg):
 
 
 def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=None,
-           market_rows=None):
+           market_rows=None, assessments=None):
     generated = generated or dt.datetime.now(dt.timezone.utc)
     disp = cfg["display"]
     new_ids = set(new_ids or [])
+    assessments = assessments or {}
     by_sec = {k: [] for k in SECTION_ORDER}
     for d in digest:
         by_sec.setdefault(d["section"], []).append(d)
@@ -280,7 +288,9 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
 
     # RIGHT - biggest of the week on pre-decay magnitude, so Monday's big story
     # still reads as big on Friday instead of being buried by freshness.
-    week = sorted(digest, key=lambda x: x.get("score_raw", x["score"]), reverse=True)[:5]
+    win = cfg.get("display", {}).get("top_stories_days", 7)
+    week = sorted([d for d in digest if d.get("age_days", 0) <= win],
+                  key=lambda x: x.get("score_raw", x["score"]), reverse=True)[:5]
     parts.append('<div class="panel"><h2>Top stories <span>past 7 days</span></h2>')
     parts.append(_panel_items(week) if week else '<p class="empty">No stories in window.</p>')
     parts.append("</div></div>")
@@ -335,6 +345,14 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             tags.append(f'<span class="tag">{esc(r["lead_source"])}</span>')
             if r["n_sources"] > 1:
                 tags.append(f'<span class="tag hot">{r["n_sources"]} sources</span>')
+            prov = r.get("provenance")
+            if prov == "primary":
+                tags.append('<span class="tag prim">primary</span>')
+            elif prov == "release":
+                tags.append('<span class="tag rel">release</span>')
+            if r.get("bids"):
+                n = r["bids"]
+                tags.append(f'<span class="tag bids">{"sole source" if n == 1 else f"{n} bidders"}</span>')
             if r.get("is_award"):
                 tags.append('<span class="tag hot">award</span>')
             if r["dib"]:
@@ -349,6 +367,8 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
                 f'<div class="item"><a href="{esc(r["link"])}" target="_blank" rel="noopener">{esc(r["title"])}</a>'
                 f'{gloss}<div class="tags">{"".join(tags)}</div></div>')
         parts.append('</div>')
+        if assessments.get(key):
+            parts.append(f'<div class="assess"><b>Assessment</b>{esc(assessments[key])}</div>')
         if tail:
             parts.append(f'<details class="tail"><summary>{len(tail)} more</summary>')
             for r in tail:

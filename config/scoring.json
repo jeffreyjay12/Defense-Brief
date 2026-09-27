@@ -746,7 +746,8 @@
       "nuclear_energy": 12,
       "thinktank": 12,
       "budget": 18
-    }
+    },
+    "top_stories_days": 7
   },
   "clustering": {
     "_comment": "Duplicate detection across sources, inverse-frequency weighted so rare tokens (pac-3, sentinel) count far more than common ones (lockheed, missile). Dollar figures are normalised into a shared token but can never create a match alone. Deliberately biased toward NOT merging: a false split only costs a corroboration bonus, a false merge silently deletes a story. Stable band is 0.45-0.60; 0.50 sits in the middle so corpus shifts don't flip behaviour.",
@@ -890,7 +891,16 @@
       "misses estimates",
       "buy rating",
       "sell rating",
-      "outperform"
+      "outperform",
+      "988",
+      "crisis lifeline",
+      "nursing home",
+      "child welfare",
+      "opioid",
+      "public health",
+      "economy act",
+      "tsunami evacuation",
+      "ferrari"
     ],
     "summary_terms": [
       "[sponsored]",
@@ -955,6 +965,20 @@
       "option exercised",
       "undefinitized",
       "procurement of"
+    ],
+    "exclude_terms": [
+      "gao found",
+      "what gao found",
+      "opportunities exist",
+      "gao recommends",
+      "report to congressional",
+      "oversight of",
+      "actions needed",
+      "should strengthen",
+      "could be improved",
+      "an overview",
+      "testimony before",
+      "complete information needed"
     ]
   },
   "market": {
@@ -1147,5 +1171,13 @@
       "TXT",
       "DRS"
     ]
+  },
+  "assessment": {
+    "_comment": "Per-section assessment, modelled on the weekly run's Assessment blocks. Converts reporting into an investment implication rather than summarising it. Skips sections with too few items. Needs ANTHROPIC_API_KEY; without it the brief renders unchanged.",
+    "enabled": true,
+    "min_items": 3,
+    "max_items": 10,
+    "sentences": "3 to 5",
+    "context": "You are writing for an investor building a holding company of small private Tier 2-4 suppliers in the US defense industrial base - engineered components, specialty processing and accredited testing - with the nuclear enterprise as the pilot end market. The point of an assessment is the second-order read: what a fact implies about supplier-base depth, qualification barriers, pricing power, who bears ramp risk, and what a transaction says about the spread between auction prices for scaled credentialed platforms and off-market prices for unlisted suppliers in the same oligopoly."
   }
 }

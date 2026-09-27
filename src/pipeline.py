@@ -219,6 +219,50 @@ def first_para(html_text, maxlen=400):
     return re.sub(r"\s+", " ", txt).strip()[:maxlen]
 
 
+PRIMARY_SOURCES = {"NNSA","DOE Newsroom","DoD Releases","DoD Contracts","GAO Reports",
+                   "OUSW A&S (acq.osd.mil)","SEC EDGAR","STRATCOM"}
+
+
+def provenance(source, link=""):
+    """Primary / Release / Trade. Provenance matters more than outlet here."""
+    if source in PRIMARY_SOURCES:
+        return "primary"
+    if source.endswith(" IR") or "businesswire" in (link or "").lower():
+        return "release"
+    return "trade"
+
+
+def bid_density(text):
+    """Offers received on a solicitation - a direct read on supplier-base depth.
+
+    Award notices say things like "one bid solicited and one received" or
+    "four offers received". A count of one means sole source; a low count on a
+    large award means the qualified base is thin, which is the thesis in a
+    single number.
+    """
+    low = (text or "").lower()
+    words = {"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,
+             "eight":8,"nine":9,"ten":10}
+    num = r"(\d+|" + "|".join(words) + r")"
+    patterns = [
+        rf"\b{num}\s+(?:bids?|offers?|proposals?)\s+(?:were\s+)?(?:solicited|received|submitted)",
+        rf"\breceived\s+{num}\s+(?:bids?|offers?|proposals?)",
+        rf"\bwith\s+{num}\s+(?:offers?|bids?)\s+received",
+        rf"\b{num}\s+(?:offers?|bids?)\s+(?:were\s+)?(?:evaluated|considered)",
+    ]
+    m = None
+    for pat in patterns:
+        m = re.search(pat, low)
+        if m:
+            break
+    if m:
+        tok = m.group(1)
+        return words.get(tok, int(tok) if tok.isdigit() else None)
+    if re.search(r"\bsole[- ]source\b|\bsole source\b", low):
+        return 1
+    return None
+
+
 def hits(text, terms):
     low = (text or "").lower()
     return [t for t in terms if t in low]
@@ -583,9 +627,15 @@ def build_digest(items, cfg, now=None):
                   and cfg.get("routing", {}).get("lock_tier1_to_triad", True)
                   and not is_analysis_cluster)
         aw = cfg.get("awards_strip", {})
-        is_award = bool(aw.get("enabled")) and bool(hits(blob_l, aw.get("terms", []))) \
-            and sc["usd"] >= aw.get("min_usd", 1e6)
+        not_award = hits(blob_l, aw.get("exclude_terms", []))
+        is_award = (bool(aw.get("enabled"))
+                    and bool(hits(blob_l, aw.get("terms", [])))
+                    and not not_award
+                    and sc["usd"] >= aw.get("min_usd", 1e6))
+        blob_full = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
         out.append({
+            "provenance": provenance(lead["source"], lead.get("link", "")),
+            "bids": bid_density(blob_full),
             "is_award": is_award,
             "_locked": locked,
             "id": slug(lead["link"] or lead["title"]),
