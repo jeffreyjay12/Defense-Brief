@@ -92,7 +92,27 @@
       "indo-pacific",
       "escalation",
       "force structure",
-      "posture"
+      "posture",
+      "engine",
+      "engines",
+      "propulsion",
+      "turbine",
+      "fighter jet",
+      "airframe",
+      "second source",
+      "dual source",
+      "licenses",
+      "licensing agreement",
+      "powerplant",
+      "gearbox",
+      "actuator",
+      "bearing",
+      "fastener",
+      "valve",
+      "connector",
+      "interconnect",
+      "machining",
+      "tooling"
     ],
     "trusted_sources": [
       "SEC EDGAR",
@@ -442,7 +462,21 @@
         "overhaul",
         "repair and overhaul",
         "turbine generator",
-        "depot maintenance"
+        "depot maintenance",
+        "capacity expansion",
+        "production rate",
+        "new facility",
+        "facility expansion",
+        "plant opening",
+        "supplier investment",
+        "make versus buy",
+        "vertical integration",
+        "throughput",
+        "supply constraint",
+        "ramp",
+        "surge production",
+        "second source",
+        "insourcing"
       ]
     },
     "budget": {
@@ -485,36 +519,6 @@
         "comptroller",
         "funding shift",
         "appropriators"
-      ]
-    },
-    "primes": {
-      "label": "Primes",
-      "priority": 4,
-      "terms": [
-        "capacity expansion",
-        "production rate",
-        "new facility",
-        "facility expansion",
-        "plant opening",
-        "supplier investment",
-        "second source",
-        "onshoring",
-        "insourcing",
-        "make versus buy",
-        "vertical integration",
-        "backlog",
-        "book-to-bill",
-        "throughput",
-        "supply constraint",
-        "lead time",
-        "earnings",
-        "guidance",
-        "restructuring",
-        "layoffs",
-        "investor day",
-        "segment results",
-        "ramp",
-        "surge production"
       ]
     },
     "tech": {
@@ -672,7 +676,13 @@
         "minority investment",
         "takes a stake",
         "backs",
-        "capital injection"
+        "capital injection",
+        "spin off",
+        "spins off",
+        "separate into a standalone",
+        "standalone company",
+        "separation of",
+        "split into two"
       ]
     },
     "thinktank": {
@@ -910,7 +920,15 @@
       "public health",
       "economy act",
       "tsunami evacuation",
-      "ferrari"
+      "ferrari",
+      "final departure",
+      "last flight",
+      "retires from service",
+      "clears runway",
+      "bids adieu",
+      "farewell",
+      "legacy of service",
+      "final mission"
     ],
     "summary_terms": [
       "[sponsored]",
@@ -920,7 +938,11 @@
       "a weekly digest",
       "only for war on the rocks members",
       "curated selection of",
-      "members-only"
+      "members-only",
+      "made its final departure",
+      "final flight",
+      "last aircraft assigned",
+      "will not soon be forgotten"
     ]
   },
   "routing": {
@@ -944,10 +966,9 @@
     "thesis": "You are filtering a news brief for an investor building a HOLDING COMPANY of small private businesses deep in the US defense industrial base - Tier 2 to 4 suppliers of engineered components, specialty processing, and accredited testing, bought and consolidated into a durable platform of strategic assets. The purpose of this brief is twofold: (1) become a subject-matter expert on the industry, and (2) find and evaluate acquisition targets.\n\nCore focus: the US nuclear enterprise (Sentinel, Columbia/Trident, B-21, LRSO, warheads, NNSA sites including Pantex, Y-12 and Kansas City), missiles and energetics, specialty materials (carbon phenolic, ablatives, solid rocket motors, castings, forgings, coatings), rad-hard microelectronics and hi-rel interconnect, and commercial and installation nuclear power as a second end market.\n\nRate HIGHEST the things that inform buying or valuing a small supplier: qualification barriers and certifications, sole-source and second-source decisions, production capacity and bottlenecks, supplier-base health and consolidation, DPA Title III and industrial base policy, M&A involving sub-tier suppliers and the sponsors doing it, contract awards that signal sustained demand, skilled-labour and workforce constraints, and prime commitments that pull volume through the supply chain.\n\nRate LOW or ZERO: geopolitics and foreign policy commentary, personnel moves, ceremonies and public affairs, software and IT with no hardware implication, general military operations, equity-market and share-price news, and anything about a company's stock rather than its production.\n\nCalibration notes:\n- Threat and capability assessments of peer adversaries are relevance 2, or 3 where they reach conclusions about force structure, weapons inventories or industrial capacity - they are the demand driver behind procurement volumes.\n- Other countries' internal politics and third-party diplomacy are relevance 0.\n- Cyber requirements flowed DOWN to suppliers (CMMC, NIST 800-171, facility clearances) are relevance 3 and belong in the industrial base section - they are qualification barriers our targets must clear. The Department's own IT is relevance 0.\n- Schools, healthcare, personnel policy, facilities management, chemical or border security and disaster response are relevance 0 regardless of which agency published it.\n- Summit diplomacy and alliance politics are relevance 0 unless they reach explicit conclusions about force structure, inventories, industrial capacity or procurement.",
     "section_guide": {
       "triad": "EVENTS in the US nuclear enterprise: Sentinel/ICBM, Columbia/Trident/SLBM, B-21, LRSO, SLCM-N, warheads, NNSA sites (Pantex, Y-12, Kansas City, Los Alamos, Livermore, Savannah River). Production milestones, tests, contract awards, programme decisions, facility news. Commentary and research ABOUT these programmes is analysis, not this section.",
-      "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances. Contract awards for components, materials, energetics and capacity belong here.",
-      "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines.",
-      "primes": "What the PRIMES are doing that implies demand for the tier beneath them: capacity expansions, new facilities, production-rate changes, backlog, supplier investment, make-vs-buy shifts, restructuring that moves work, earnings commentary on throughput or supply constraints. The question is always what this means for sub-tier suppliers, not how the company's stock is doing. NOT contract awards (those go to the subject), NOT M&A (deals), NOT ownership or trading news.",
-      "deals": "Ownership and capital transactions wherever they occur: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, funding rounds, strategic and minority investments, binding term sheets, joint ventures with an equity component. A foreign investor taking a stake in a US company is a DEAL, not foreign defence news - the transaction is the subject, not the investor's nationality.",
+      "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances. Contract awards for components, materials, energetics and capacity belong here. Also absorbs PRIME activity that implies demand for the tier beneath: capacity expansions, production-rate changes, new facilities, supplier investment, make-vs-buy shifts, and earnings commentary about throughput or supply constraints. The question is always what it means for sub-tier suppliers.",
+      "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines. Prime earnings and guidance land here only when they bear on programme funding or procurement; routine quarterly results are relevance 0.",
+      "deals": "Ownership and capital transactions wherever they occur: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, funding rounds, strategic and minority investments, binding term sheets, joint ventures with an equity component. A foreign investor taking a stake in a US company is a DEAL, not foreign defence news - the transaction is the subject, not the investor's nationality. Also corporate restructurings, spin-offs and separations of business units.",
       "nuclear_energy": "US commercial and defence-installation nuclear: reactors, restarts, SMRs and microreactors, fuel cycle and enrichment, utility and hyperscaler power deals, DOE loans, NRC licensing. Foreign reactor construction, foreign utility news and general industry promotion with no US supply-chain or technology link is relevance 0.",
       "tech": "Enabling HARDWARE and the systems that pull it: rad-hard microelectronics, trusted foundry, packaging, sensors, seekers, power, thermal, autonomy and unmanned platforms, directed energy, space hardware. AI and software only when they drive hardware demand - an AI tool for staff work, chatbot adoption or IT modernisation is relevance 0.",
       "global": "Defence procurement, industry and military capability of OTHER countries - allies and partners (NATO, AUKUS, Japan, Korea, Israel, Ukraine, Poland, India) and adversaries (Russia, China, Iran, North Korea). Their orders, exports, co-production, FMS, shipyards and production rates. NOT their internal politics, leadership succession, regional diplomacy or third-party disputes - those are irrelevant. If the argument is really about US posture or capability, it is analysis. If the subject is a transaction - an investment, acquisition or stake - it is deals, regardless of who the foreign party is. A piece whose subject is US policy, US forces or US industry is NOT this section even when it discusses allies - US trade policy toward allies, US naval readiness, US posture in Europe all belong in analysis.",

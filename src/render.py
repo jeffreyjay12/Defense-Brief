@@ -132,7 +132,7 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
 # Analysis sits above Allied because a strategic piece is more likely to change
 # thinking than allied procurement news. Tech and Nuclear Energy are option
 # value and sit last.
-SECTION_ORDER = ["triad", "dib", "deals", "budget", "primes",
+SECTION_ORDER = ["triad", "dib", "deals", "budget",
                  "thinktank", "global", "tech", "nuclear_energy"]
 
 
