@@ -488,7 +488,7 @@
       ]
     },
     "primes": {
-      "label": "Prime Demand Signal",
+      "label": "Primes",
       "priority": 4,
       "terms": [
         "capacity expansion",
@@ -662,7 +662,17 @@
         "bid for",
         "portfolio company",
         "sponsor-backed",
-        "recapitalization"
+        "recapitalization",
+        "strategic investment",
+        "invests in",
+        "term sheet",
+        "binding term sheet",
+        "joint venture",
+        "equity stake",
+        "minority investment",
+        "takes a stake",
+        "backs",
+        "capital injection"
       ]
     },
     "thinktank": {
@@ -937,11 +947,11 @@
       "dib": "Industrial base mechanics: supplier capacity, bottlenecks, sole/second sourcing, qualification, energetics and specialty materials, castings and forgings, shipyards and depots, skilled labour, critical minerals, DPA Title III. Also includes compliance and qualification regimes imposed ON suppliers - CMMC, NIST 800-171, NADCAP, AS9100, ITAR registration, facility clearances. Contract awards for components, materials, energetics and capacity belong here.",
       "budget": "Appropriations, NDAA, reprogramming, acquisition policy and reform, GAO oversight of defence spending, programme cost and schedule baselines.",
       "primes": "What the PRIMES are doing that implies demand for the tier beneath them: capacity expansions, new facilities, production-rate changes, backlog, supplier investment, make-vs-buy shifts, restructuring that moves work, earnings commentary on throughput or supply constraints. The question is always what this means for sub-tier suppliers, not how the company's stock is doing. NOT contract awards (those go to the subject), NOT M&A (deals), NOT ownership or trading news.",
-      "deals": "Ownership and capital transactions: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, AND startup funding rounds of any size (seed through late stage). A company raising money belongs here, not in primes.",
+      "deals": "Ownership and capital transactions wherever they occur: M&A, take-privates, divestitures, carve-outs, IPOs, antitrust, funding rounds, strategic and minority investments, binding term sheets, joint ventures with an equity component. A foreign investor taking a stake in a US company is a DEAL, not foreign defence news - the transaction is the subject, not the investor's nationality.",
       "nuclear_energy": "US commercial and defence-installation nuclear: reactors, restarts, SMRs and microreactors, fuel cycle and enrichment, utility and hyperscaler power deals, DOE loans, NRC licensing. Foreign reactor construction, foreign utility news and general industry promotion with no US supply-chain or technology link is relevance 0.",
       "tech": "Enabling HARDWARE and the systems that pull it: rad-hard microelectronics, trusted foundry, packaging, sensors, seekers, power, thermal, autonomy and unmanned platforms, directed energy, space hardware. AI and software only when they drive hardware demand - an AI tool for staff work, chatbot adoption or IT modernisation is relevance 0.",
-      "global": "Defence procurement, industry and military capability of OTHER countries - allies and partners (NATO, AUKUS, Japan, Korea, Israel, Ukraine, Poland, India) and adversaries (Russia, China, Iran, North Korea). Their orders, exports, co-production, FMS, shipyards and production rates. NOT their internal politics, leadership succession, regional diplomacy or third-party disputes - those are irrelevant. If the argument is really about US posture or capability, it is analysis, not this section. A piece whose subject is US policy, US forces or US industry is NOT this section even when it discusses allies - US trade policy toward allies, US naval readiness, US posture in Europe all belong in analysis.",
-      "thinktank": "Strategic analysis, essays and research reports whose argument bears on US capability, posture, force structure, deterrence or what the US should buy - INCLUDING nuclear enterprise commentary (deterrence posture, ICBM force structure, stockpile policy, test and evaluation practice). Adversary assessments and contingency analysis belong here too. Not news reporting, not government announcements, not programme milestones."
+      "global": "Defence procurement, industry and military capability of OTHER countries - allies and partners (NATO, AUKUS, Japan, Korea, Israel, Ukraine, Poland, India) and adversaries (Russia, China, Iran, North Korea). Their orders, exports, co-production, FMS, shipyards and production rates. NOT their internal politics, leadership succession, regional diplomacy or third-party disputes - those are irrelevant. If the argument is really about US posture or capability, it is analysis. If the subject is a transaction - an investment, acquisition or stake - it is deals, regardless of who the foreign party is. A piece whose subject is US policy, US forces or US industry is NOT this section even when it discusses allies - US trade policy toward allies, US naval readiness, US posture in Europe all belong in analysis.",
+      "thinktank": "Strategic analysis, essays and research reports whose argument bears on US capability, posture, force structure, deterrence or what the US should buy - INCLUDING nuclear enterprise commentary (deterrence posture, ICBM force structure, stockpile policy, test and evaluation practice). Adversary assessments and contingency analysis belong here too. Not news reporting, not government announcements, not programme milestones. Never a contract award, procurement action or transaction, whatever the subject matter."
     }
   },
   "awards_strip": {
