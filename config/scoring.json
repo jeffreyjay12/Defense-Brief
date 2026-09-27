@@ -732,7 +732,7 @@
     "news_decay_per_day": 2.0,
     "analysis_decay_per_day": 1.4,
     "news_max_age_days": 7,
-    "analysis_max_age_days": 21,
+    "analysis_max_age_days": 12,
     "analysis_base_points": 2
   },
   "display": {
@@ -1179,5 +1179,10 @@
     "max_items": 10,
     "sentences": "3 to 5",
     "context": "You are writing for an investor building a holding company of small private Tier 2-4 suppliers in the US defense industrial base - engineered components, specialty processing and accredited testing - with the nuclear enterprise as the pilot end market. The point of an assessment is the second-order read: what a fact implies about supplier-base depth, qualification barriers, pricing power, who bears ramp risk, and what a transaction says about the spread between auction prices for scaled credentialed platforms and off-market prices for unlisted suppliers in the same oligopoly."
+  },
+  "carry_forward": {
+    "_comment": "Bounds on re-adding items that have left their source feeds. Without these the digest becomes an archive: 131 items were being carried each run, Analysis reached 91 items and Triad 3, and nothing registered as new because the previous digest already held everything. min_score drops items that have decayed past usefulness; max_items caps the total, highest pre-decay score first.",
+    "min_score": 2.0,
+    "max_items": 45
   }
 }

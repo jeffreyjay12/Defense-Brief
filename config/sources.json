@@ -203,7 +203,8 @@
       "hint": [
         "thinktank"
       ],
-      "note": "topic feed returned an empty stub; trying the publications feed. verify"
+      "note": "empty stub at both tried URLs - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "Hudson Institute",
@@ -399,7 +400,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "returns HTML, not a feed - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "Northrop Grumman IR",
@@ -410,7 +412,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "404 - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "RTX IR",
@@ -421,7 +424,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "403 - blocked - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "General Dynamics IR",
@@ -432,7 +436,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "404 - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "L3Harris IR",
@@ -443,7 +448,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "404 - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "HII IR",
@@ -454,7 +460,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "404 - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "Howmet IR",
@@ -465,7 +472,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "DNS failure - hostname does not exist - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "TransDigm IR",
@@ -476,7 +484,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "DNS failure - hostname does not exist - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "BWXT IR",
@@ -487,7 +496,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "connection timeout - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     },
     {
       "name": "Curtiss-Wright IR",
@@ -498,7 +508,8 @@
         "primes",
         "deals"
       ],
-      "note": "company IR feed - verify URL on first run"
+      "note": "returns HTML, not a feed - URL was a guess; needs view-source on the IR page to confirm",
+      "enabled": false
     }
   ]
 }

@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from pipeline import fetch, build_digest          # noqa: E402
-from semantic import adjudicate                  # noqa: E402
+from semantic import adjudicate, assess          # noqa: E402
 import market                                    # noqa: E402
 try:
     import mailfeed                               # optional: newsletter ingestion
@@ -61,13 +61,26 @@ def previous_digest():
 
 
 def carry_forward(digest, prev, cfg):
-    """Re-add still-fresh items that have left their source feed."""
+    """Re-add still-fresh items that have left their source feed.
+
+    Bounded deliberately. Unbounded carry-forward turns the digest into an
+    archive: every run re-adds everything inside the age window, so a prolific
+    analysis source compounds until it dominates the page and nothing registers
+    as new.
+    """
     import datetime as _dt
     now = _dt.datetime.now(_dt.timezone.utc)
     rc = cfg["recency"]
+    cf = cfg.get("carry_forward", {})
+    floor = cf.get("min_score", 2.0)
+    cap = cf.get("max_items", 45)
     have = {d["id"] for d in digest}
     kept = 0
+    # highest-value first, so the cap keeps what matters
+    prev = sorted(prev, key=lambda x: x.get("score_raw", 0), reverse=True)
     for p in prev:
+        if kept >= cap:
+            break
         if p.get("id") in have or not p.get("published"):
             continue
         try:
@@ -87,7 +100,10 @@ def carry_forward(digest, prev, cfg):
         if raw is None:
             continue
         p = dict(p)
-        p["score"] = round(raw - age * decay, 2)
+        new_score = round(raw - age * decay, 2)
+        if new_score < floor:
+            continue        # decayed past the point of being worth re-adding
+        p["score"] = new_score
         p["age_days"] = round(age, 2)
         p["carried"] = True
         digest.append(p)
@@ -214,9 +230,10 @@ def main():
         return
 
     market_rows = market.fetch(cfg, cache_path=DATA / 'market.json')
+    assessments = assess(digest, cfg)
     summary = ai_summary(digest, cfg)
     html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids,
-                  market_rows=market_rows)
+                  market_rows=market_rows, assessments=assessments)
     (PUB / "index.html").write_text(html)
     (PUB / "manifest.json").write_text(MANIFEST)
     (PUB / "icon.svg").write_text(ICON)
