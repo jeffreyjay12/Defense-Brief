@@ -52,7 +52,14 @@ def tokens(title):
     tk = {w for w in t.split() if len(w) > 2 and w not in STOP}
     usd = parse_dollars(title)
     if usd >= 1e6:
-        tk.add(f"usd{int(usd)}")
+        # One significant figure: $562M and $552M both bucket to 6e8. Coarse on
+        # purpose - outlets disagree on the exact figure for the same award.
+        # Safe because a shared amount cannot create a merge on its own; the
+        # pair still needs three shared real words.
+        import math as _m
+        mag = _m.floor(_m.log10(usd))
+        bucket = round(usd / (10 ** mag)) * (10 ** mag)
+        tk.add(f"usd{bucket:.0f}")
     return tk
 
 

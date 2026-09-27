@@ -1,5 +1,5 @@
 """Render the digest to a mobile-first static page."""
-import datetime as dt, html, json
+import datetime as dt, html, json, re
 
 CSS = """
 :root{
@@ -299,8 +299,23 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
     # row list rather than cards - a different reading mode from the stories.
     aw = cfg.get("awards_strip", {})
     if aw.get("enabled"):
-        deals = sorted([d for d in digest if d.get("is_award")],
-                       key=lambda x: x.get("usd", 0), reverse=True)[:aw.get("max_items", 12)]
+        import math as _m
+        seen, deals = set(), []
+        for d in sorted([x for x in digest if x.get("is_award")],
+                        key=lambda x: (x.get("usd", 0), x.get("score", 0)), reverse=True):
+            usd = d.get("usd", 0)
+            mag = _m.floor(_m.log10(usd)) if usd > 0 else 0
+            bucket = round(usd / (10 ** mag)) * (10 ** mag) if usd > 0 else 0
+            # first few significant words of the headline, minus the amount
+            words = [w for w in re.sub(r"[^a-z0-9 ]", " ", d["title"].lower()).split()
+                     if len(w) > 3 and not w.isdigit()][:4]
+            key = (bucket, " ".join(sorted(words[:2])))
+            if key in seen:
+                continue
+            seen.add(key)
+            deals.append(d)
+            if len(deals) >= aw.get("max_items", 12):
+                break
         if deals:
             parts.append('<div class="awards"><h2>Awards &amp; transactions</h2>')
             for d in deals:
