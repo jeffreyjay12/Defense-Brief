@@ -60,6 +60,33 @@ def previous_digest():
     return []
 
 
+def _same_story(a_title, b_title, a_usd, b_usd):
+    """Cheap duplicate check for carried items against the fresh digest."""
+    import re as _re, math as _m
+    stop = {"the","a","an","and","or","of","to","in","for","on","with","at","by","from","as",
+            "is","are","be","was","will","its","it","that","this","has","have","up"}
+    def tk(t):
+        out = set()
+        for w in _re.sub(r"[^a-z0-9 ]", " ", (t or "").lower()).split():
+            if len(w) > 3 and w not in stop:
+                out.add(w[:-1] if w.endswith("s") and len(w) > 4 else w)
+        return out
+    ta, tb = tk(a_title), tk(b_title)
+    if not ta or not tb:
+        return False
+    shared = ta & tb
+    if len(shared) < 3:
+        return False
+    # same headline vocabulary AND the same order of magnitude of money
+    if a_usd and b_usd:
+        ma = round(a_usd / (10 ** _m.floor(_m.log10(a_usd))))
+        mb = round(b_usd / (10 ** _m.floor(_m.log10(b_usd))))
+        same_mag = (ma == mb) and (_m.floor(_m.log10(a_usd)) == _m.floor(_m.log10(b_usd)))
+        if same_mag:
+            return True
+    return len(shared) / max(min(len(ta), len(tb)), 1) >= 0.6
+
+
 def carry_forward(digest, prev, cfg):
     """Re-add still-fresh items that have left their source feed.
 
@@ -103,6 +130,10 @@ def carry_forward(digest, prev, cfg):
         new_score = round(raw - age * decay, 2)
         if new_score < floor:
             continue        # decayed past the point of being worth re-adding
+        # do not reintroduce a story the fresh fetch already covers
+        if any(_same_story(p.get("title"), d.get("title"),
+                           p.get("usd"), d.get("usd")) for d in digest):
+            continue
         p["score"] = new_score
         p["age_days"] = round(age, 2)
         p["carried"] = True

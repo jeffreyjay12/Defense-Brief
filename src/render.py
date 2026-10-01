@@ -300,22 +300,35 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
     aw = cfg.get("awards_strip", {})
     if aw.get("enabled"):
         import math as _m
-        seen, deals = set(), []
+        stop = {"the","a","an","and","or","of","to","in","for","on","with","at","by","from",
+                "as","is","are","be","up","its","it"}
+
+        def _words(s):
+            # strip a trailing plural so "Stingray" and "Stingrays" match
+            out = set()
+            for w in re.sub(r"[^a-z0-9 ]", " ", (s or "").lower()).split():
+                if len(w) > 3 and w not in stop:
+                    out.add(w[:-1] if w.endswith("s") and len(w) > 4 else w)
+            return out
+
+        deals = []
         for d in sorted([x for x in digest if x.get("is_award")],
                         key=lambda x: (x.get("usd", 0), x.get("score", 0)), reverse=True):
             usd = d.get("usd", 0)
             mag = _m.floor(_m.log10(usd)) if usd > 0 else 0
             bucket = round(usd / (10 ** mag)) * (10 ** mag) if usd > 0 else 0
-            # first few significant words of the headline, minus the amount
-            words = [w for w in re.sub(r"[^a-z0-9 ]", " ", d["title"].lower()).split()
-                     if len(w) > 3 and not w.isdigit()][:4]
-            key = (bucket, " ".join(sorted(words[:2])))
-            if key in seen:
+            w = _words(d["title"])
+            dup = False
+            for seen_bucket, seen_words in deals and [(x[1], x[2]) for x in deals] or []:
+                if seen_bucket == bucket and len(w & seen_words) >= 3:
+                    dup = True
+                    break
+            if dup:
                 continue
-            seen.add(key)
-            deals.append(d)
+            deals.append((d, bucket, w))
             if len(deals) >= aw.get("max_items", 12):
                 break
+        deals = [x[0] for x in deals]
         if deals:
             parts.append('<div class="awards"><h2>Awards &amp; transactions</h2>')
             for d in deals:
