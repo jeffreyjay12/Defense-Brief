@@ -223,6 +223,13 @@ def fetch(cfg, cache=None, log=print):
         log("  email: no ANTHROPIC_API_KEY - cannot read mail without the model, skipping")
         return [], cache
 
+    folder = mailcfg.get("folder", "Monitor")
+    # A personal account must never have its whole inbox sent to the model.
+    # Mail reaches the monitor through a Gmail label; reading INBOX is refused
+    # unless the config says, explicitly, that the account is dedicated.
+    if folder.upper() == "INBOX" and not mailcfg.get("dedicated_account", False):
+        log("  email: folder is INBOX on a non-dedicated account - refusing; set email.folder to the label")
+        return [], cache
     host = os.environ.get("MAIL_HOST") or mailcfg.get("host", "imap.gmail.com")
     days = int(mailcfg.get("lookback_days", 4))
     min_rel = int(mailcfg.get("min_relevance", 1))
@@ -237,7 +244,11 @@ def fetch(cfg, cache=None, log=print):
     try:
         M = imaplib.IMAP4_SSL(host)
         M.login(user, password)
-        M.select(mailcfg.get("folder", "INBOX"), readonly=True)   # never alters the mailbox
+        typ, _ = M.select(f'"{folder}"', readonly=True)          # never alters the mailbox
+        if typ != "OK":
+            log(f"  email: label '{folder}' not found - create it and the Gmail filter that fills it")
+            M.logout()
+            return [], cache
         since = (dt.date.today() - dt.timedelta(days=days)).strftime("%d-%b-%Y")
         typ, data = M.search(None, f"(SINCE {since})")
         ids = data[0].split() if data and data[0] else []

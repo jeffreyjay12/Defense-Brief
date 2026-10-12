@@ -1134,10 +1134,10 @@
     }
   },
   "email": {
-    "_comment": "Dedicated Gmail inbox subscribed to newsletters, press-wire alerts and Google Alerts. Claude reads each NEW message once (cached via mail_cache.json on the live site), splits it into separate stories and judges each against semantic.thesis; stories below min_relevance are dropped and logged by title. Read-only IMAP. Secrets: MAIL_USER, MAIL_PASSWORD (a Gmail APP password), MAIL_HOST. Any sender is read; the senders map only sets the display name and weight, and ignore_senders skips account and security mail.",
+    "_comment": "A Gmail label (default 'Monitor') filled by a filter on a +monitor address subscribed to newsletters, press-wire alerts and Google Alerts. Claude reads each NEW message once (cached via mail_cache.json on the live site), splits it into separate stories and judges each against semantic.thesis; stories below min_relevance are dropped and logged by title. Read-only IMAP. Secrets: MAIL_USER, MAIL_PASSWORD (a Gmail APP password), MAIL_HOST. Any sender is read; the senders map only sets the display name and weight, and ignore_senders skips account and security mail. Reads ONLY that label; INBOX is refused unless dedicated_account is true.",
     "enabled": true,
     "host": "imap.gmail.com",
-    "folder": "INBOX",
+    "folder": "Monitor",
     "lookback_days": 4,
     "max_messages": 200,
     "senders": {
@@ -1247,7 +1247,8 @@
       "no-reply@google.com",
       "googleworkspace",
       "mail-noreply@google.com"
-    ]
+    ],
+    "dedicated_account": false
   },
   "edgar": {
     "_comment": "DISABLED. Built for ownership and control events (SC 13D, S-4), which is trading-adjacent intelligence - not the use case. This brief reads companies for demand signal, capacity moves and comps, and filings do not carry those: the IR feeds do. Kept in the codebase in case a filings need emerges; set enabled=true and pick forms. Requires SEC_USER_AGENT.",
