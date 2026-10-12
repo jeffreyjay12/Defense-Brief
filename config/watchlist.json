@@ -1,0 +1,42 @@
+{
+  "_comment": "Topics the weekly synthesis tracks for presence and ABSENCE. Every build marks a topic as seen when an item on the page matches any of its terms (lower-case substring of title + summary). The weekly reports, for each topic, how many items it had this week and how many weeks it has been silent. Silence means silence in the monitored sources, not in the world. Edit freely: add a topic by adding an entry; terms should be specific enough not to match unrelated stories.",
+  "topics": [
+    {"area": "deterrence", "name": "Sentinel ICBM", "terms": ["sentinel icbm", "lgm-35", "sentinel missile", "sentinel program", "sentinel nuclear"]},
+    {"area": "deterrence", "name": "Columbia-class SSBN", "terms": ["columbia-class", "columbia class"]},
+    {"area": "deterrence", "name": "Trident II D5LE2", "terms": ["trident ii", "trident d5", "d5le", "d5 life extension"]},
+    {"area": "deterrence", "name": "B-21 Raider", "terms": ["b-21"]},
+    {"area": "deterrence", "name": "LRSO / SLCM-N", "terms": ["lrso", "long range standoff", "slcm-n", "sea-launched cruise missile"]},
+    {"area": "deterrence", "name": "NC3", "terms": ["nc3", "nuclear command, control", "nuclear command and control"]},
+    {"area": "deterrence", "name": "Solid rocket motors", "terms": ["solid rocket motor", "solid-rocket motor", "srm "]},
+
+    {"area": "nse", "name": "Plutonium pit production", "terms": ["pit production", "plutonium pit"]},
+    {"area": "nse", "name": "W93 / Mk7", "terms": ["w93"]},
+    {"area": "nse", "name": "W87-1", "terms": ["w87-1"]},
+    {"area": "nse", "name": "Life extensions (B61-13, W80-4, W88)", "terms": ["b61-13", "b61-12", "w80-4", "w88 alt"]},
+    {"area": "nse", "name": "Y-12 / Uranium Processing Facility", "terms": ["y-12", "uranium processing facility"]},
+    {"area": "nse", "name": "Pantex / Kansas City", "terms": ["pantex", "kansas city national security campus", "kcnsc"]},
+    {"area": "nse", "name": "Depleted uranium / HPDU", "terms": ["depleted uranium", "hpdu", "high purity depleted", "high-purity depleted"]},
+    {"area": "nse", "name": "Lithium processing", "terms": ["lithium processing facility", "lithium processing"]},
+    {"area": "nse", "name": "Defense enrichment / unobligated fuel", "terms": ["defense enrichment", "domestic uranium enrichment", "duece", "unobligated"]},
+    {"area": "nse", "name": "Naval nuclear propulsion", "terms": ["naval reactors", "naval nuclear", "naval reactor fuel"]},
+    {"area": "nse", "name": "NNSA M&O contracts", "terms": ["management and operating contract", "m&o contract", "m&o contracts"]},
+
+    {"area": "commercial_nuclear", "name": "HALEU and enrichment", "terms": ["haleu", "uranium enrichment", "centrifuge"]},
+    {"area": "commercial_nuclear", "name": "Conversion and deconversion", "terms": ["uranium conversion", "deconversion", "duf6"]},
+    {"area": "commercial_nuclear", "name": "SMR and advanced reactor orders", "terms": ["small modular reactor", "smr ", "microreactor", "advanced reactor"]},
+    {"area": "commercial_nuclear", "name": "NRC licensing actions", "terms": ["construction permit", "operating license", "nuclear regulatory commission"]},
+    {"area": "commercial_nuclear", "name": "Restarts and uprates", "terms": ["restart", "uprate"]},
+
+    {"area": "budget", "name": "FY27 appropriations / CR", "terms": ["appropriations", "continuing resolution", "fy-27", "fy2027", "fiscal 2027", "fiscal year 2027"]},
+    {"area": "budget", "name": "NDAA", "terms": ["ndaa", "national defense authorization"]},
+    {"area": "budget", "name": "Multiyear / EOQ procurement", "terms": ["multiyear", "multi-year", "economic order quantity"]},
+    {"area": "budget", "name": "DPA Title III / OSC / IBAS", "terms": ["defense production act", "dpa title iii", "title iii", "office of strategic capital", "ibas"]},
+    {"area": "budget", "name": "155mm artillery production", "terms": ["155mm", "155-mm", "155 mm"]},
+    {"area": "budget", "name": "Interceptor production (PAC-3, SM-3, SM-6, THAAD)", "terms": ["pac-3", "sm-3", "sm-6", "thaad", "interceptor production"]},
+
+    {"area": "industry", "name": "Sub-tier supplier M&A", "terms": ["acquires", "acquisition of", "to acquire", "take-private", "carve-out"]},
+    {"area": "industry", "name": "Second-source / new entrant decisions", "terms": ["second source", "second-source", "new entrant", "dual source"]},
+    {"area": "industry", "name": "Contractor pricing and profit policy", "terms": ["cost and pricing", "profit policy", "pricing transparency", "weighted guidelines"]},
+    {"area": "industry", "name": "CMMC", "terms": ["cmmc"]}
+  ]
+}

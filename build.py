@@ -26,6 +26,10 @@ try:
     import edgar                                  # optional: SEC filings
 except ImportError:
     edgar = None
+try:
+    import weekly                                 # optional: weekly compilation
+except ImportError:
+    weekly = None
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -99,7 +103,17 @@ def _same_story(a_title, b_title, a_usd, b_usd):
     if not ta or not tb:
         return False
     shared = ta & tb
+    # the same precise dollar figure (within 2%) and two shared words: one
+    # award written up twice ("Boeing lands $14.7B PAC-3 seeker deal" /
+    # "Boeing nabs potential $14.7 billion PAC-3 seeker contract")
+    if a_usd and b_usd and len(shared) >= 2 and abs(a_usd - b_usd) <= 0.02 * max(a_usd, b_usd):
+        return True
     if len(shared) < 3:
+        return False
+    # two different dollar figures are two different awards, however alike the
+    # headlines ("Army awards Kaizen $49M five-year contract" is not "Army
+    # awards Anduril contract worth up to $1.8B over five years")
+    if a_usd and b_usd and max(a_usd, b_usd) > 1.5 * min(a_usd, b_usd):
         return False
     # same headline vocabulary AND the same order of magnitude of money
     if a_usd and b_usd:
@@ -317,6 +331,15 @@ def main():
         return
 
     market_rows = market.fetch(cfg, cache_path=DATA / 'market.json')
+    # Weekly compilation (archive.json, watch_state.json, week.json). If the
+    # published history exists but can't be read, stop before anything is
+    # deployed so the next build doesn't overwrite it.
+    if weekly is not None:
+        try:
+            weekly.run(digest, cfg, market_rows, PUB, ROOT)
+        except weekly.HistoryUnavailable as ex:
+            print(f"weekly: {ex}")
+            sys.exit(1)
     summary = ai_summary(digest, cfg)
     html = render(digest, cfg, errors=errors, ai_summary=summary, new_ids=new_ids,
                   market_rows=market_rows)
