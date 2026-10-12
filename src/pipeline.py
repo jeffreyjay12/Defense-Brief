@@ -26,7 +26,13 @@ except ImportError:
 STOP = {
     "the","a","an","and","or","of","to","in","for","on","with","at","by","from","as","is","are",
     "be","was","were","will","would","new","says","say","said","after","over","its","it","that",
-    "this","has","have","had","not","but","more","than","into","about","us","u.s.","amid"
+    "this","has","have","had","not","but","more","than","into","about","us","u.s.","amid",
+    # Award boilerplate. "Boeing wins $50 billion tanker contract" and "Lockheed
+    # wins $50 billion PAC-3 contract" shared wins/billion/contract and merged,
+    # silently deleting one award. The amount is already carried by the usd
+    # token; these words say nothing about which story it is.
+    "billion","million","contract","contracts","deal","deals","award","awards","awarded",
+    "wins","win","won","lands","nabs","inks","signs","potential","worth","up"
 }
 
 
@@ -49,7 +55,9 @@ def tokens(title):
     rarely cites an identical amount.
     """
     t = re.sub(r"[^a-z0-9 ]", " ", (title or "").lower())
-    tk = {w for w in t.split() if len(w) > 2 and w not in STOP}
+    # light plural stemming so "Stingray" and "Stingrays" are one token
+    tk = {(w[:-1] if w.endswith("s") and len(w) > 4 and not w.endswith("ss") else w)
+          for w in t.split() if len(w) > 2 and w not in STOP}
     usd = parse_dollars(title)
     if usd >= 1e6:
         # One significant figure: $562M and $552M both bucket to 6e8. Coarse on
@@ -275,6 +283,28 @@ def hits(text, terms):
     return [t for t in terms if t in low]
 
 
+def tier1_hits(text, cfg):
+    """Tier-1 programme matches, guarded against ordinary words.
+
+    Substring matching put "Army Reserve Unit Supports Local Junior ROTC Raider
+    Challenge" in Triad because "raider" is the B-21's name. Tier-1 terms now
+    need a whole-word match, and the ones that are also common English words
+    (raider, sentinel, trident) need a programme-context word nearby as well -
+    configured in entities.tier1_context."""
+    low = (text or "").lower()
+    ent = cfg["entities"]
+    ctx = ent.get("tier1_context", {})
+    out = []
+    for t in ent["tier1"]:
+        if not re.search(r"(?<![a-z0-9])" + re.escape(t) + r"(?![a-z0-9])", low):
+            continue
+        need = ctx.get(t)
+        if need and not any(n in low for n in need):
+            continue
+        out.append(t)
+    return out
+
+
 # ---------------------------------------------------------------- fetching
 def fetch(sources, limit_per_feed=40, log=print):
     """Fetch all feeds. Returns (items, errors)."""
@@ -387,7 +417,10 @@ def gate(items, cfg):
             continue
         blob = f"{it['title']} {it['summary']}"
         h = hits(blob, terms)
-        if it.get("source") in trusted or len(h) >= g.get("min_terms", 1):
+        # Email items were already read and judged against the thesis by the
+        # model; the keyword gate is exactly the recall failure that route exists
+        # to fix, so it does not apply to them. Hard rejects above still do.
+        if it.get("pre_judged") or it.get("source") in trusted or len(h) >= g.get("min_terms", 1):
             it["_gate_hits"] = h[:6]
             kept.append(it)
         else:
@@ -423,14 +456,47 @@ def cluster(items, min_shared=3, overlap=0.40, tight_overlap=0.50):
     def weight(ts):
         return sum(USD_WEIGHT if t.startswith("usd") else idf.get(t, 1.0) for t in ts)
 
+    def _when(it):
+        try:
+            w = dt.datetime.fromisoformat(it["published"])
+            return w if w.tzinfo else w.replace(tzinfo=dt.timezone.utc)
+        except Exception:
+            return None
+
+    def same_award(it, c):
+        """Two reports of one award: the same precise dollar figure, the same
+        company or programme, within a few days. The token threshold alone
+        split "Boeing lands $14.7B PAC-3 seeker deal to support production
+        ramp" from "Boeing nabs potential $14.7 billion PAC-3 seeker contract"
+        because the longer headline dilutes the overlap. A precise amount
+        (within 2%, not the one-significant-figure bucket) plus two shared
+        words is far stronger evidence than any word overlap, and still keeps
+        Boeing's $50B tanker apart from Lockheed's $50B PAC-3 award."""
+        a, b = it.get("_usd", 0), c.get("usd", 0)
+        if a < 1e7 or b < 1e7 or abs(a - b) / max(a, b) > 0.02:
+            return False
+        wa, wb = _when(it), c.get("when")
+        if wa and wb and abs((wa - wb).total_seconds()) > 4 * 86400:
+            return False
+        words = {t for t in (it["_tk"] & c["seed"]) if not t.startswith("usd")}
+        return len(words) >= 2
+
     clusters = []
     for it, tk in docs:
+        it["_tk"] = tk
+        it["_usd"] = parse_dollars(it["title"])
         if not tk:
-            clusters.append({"items": [it], "tokens": tk, "seed": tk})
+            clusters.append({"items": [it], "tokens": tk, "seed": tk,
+                             "usd": it["_usd"], "when": _when(it)})
             continue
         placed = False
         for c in clusters:
             seed = c["seed"] or c["tokens"]
+            if same_award(it, c):
+                c["items"].append(it)
+                c["tokens"] |= tk
+                placed = True
+                break
             inter = tk & seed
             # A shared dollar figure boosts similarity but must never create a
             # match on its own: Boeing's $50B tanker and Lockheed's $50B PAC-3
@@ -447,7 +513,11 @@ def cluster(items, min_shared=3, overlap=0.40, tight_overlap=0.50):
                 placed = True
                 break
         if not placed:
-            clusters.append({"items": [it], "tokens": set(tk), "seed": set(tk)})
+            clusters.append({"items": [it], "tokens": set(tk), "seed": set(tk),
+                             "usd": it["_usd"], "when": _when(it)})
+    for c in clusters:
+        for it in c["items"]:
+            it.pop("_tk", None); it.pop("_usd", None)
     return clusters
 
 
@@ -577,7 +647,7 @@ def route(c, cfg):
         hint |= set(i.get("hint") or [])
 
     ent = cfg["entities"]
-    tier1_hits = hits(blob, ent["tier1"])
+    t1 = tier1_hits(blob, cfg)
     program_bonus = cfg.get("routing", {}).get("tier1_triad_bonus", 8)
     # News about a tier-1 programme belongs in triad; commentary about it
     # belongs in analysis. Applying the bonus to both put every nuclear essay
@@ -595,8 +665,8 @@ def route(c, cfg):
             continue
         h = hits(blob, sconf["terms"])
         sc = sum(len(t.split()) ** 2 for t in h) + (1 if key in hint else 0)
-        if key == "triad" and tier1_hits:
-            sc += program_bonus + (len(tier1_hits) - 1)
+        if key == "triad" and t1:
+            sc += program_bonus + (len(t1) - 1)
         if sc == 0:
             continue
         cand = (sc, -sconf["priority"])
@@ -630,7 +700,7 @@ def build_digest(items, cfg, now=None):
         lead = max(c["items"], key=lambda x: x["weight"])
         blob_l = " ".join(f"{i['title']} {i['summary']}" for i in c["items"])
         is_analysis_cluster = all(i["kind"] == "analysis" for i in c["items"])
-        locked = (bool(hits(blob_l, cfg["entities"]["tier1"]))
+        locked = (bool(tier1_hits(blob_l, cfg))
                   and cfg.get("routing", {}).get("lock_tier1_to_triad", True)
                   and not is_analysis_cluster)
         aw = cfg.get("awards_strip", {})

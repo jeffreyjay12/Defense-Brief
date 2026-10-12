@@ -306,7 +306,43 @@
       "mk21a"
     ],
     "extra_entity_bonus": 1,
-    "max_entity_points": 10
+    "max_entity_points": 10,
+    "tier1_context": {
+      "_comment": "Tier-1 names that are also ordinary English words count only when a programme word appears too. Without this, a junior ROTC 'Raider Challenge' landed in Triad.",
+      "raider": [
+        "b-21",
+        "bomber",
+        "northrop",
+        "stealth",
+        "palmdale",
+        "ellsworth",
+        "whiteman",
+        "dyess",
+        "long range strike"
+      ],
+      "sentinel": [
+        "icbm",
+        "lgm",
+        "minuteman",
+        "missile",
+        "northrop",
+        "silo",
+        "nuclear",
+        "intercontinental",
+        "warhead"
+      ],
+      "trident": [
+        "d5",
+        "missile",
+        "submarine",
+        "ssbn",
+        "strategic",
+        "nuclear",
+        "columbia",
+        "lockheed",
+        "sea-launched"
+      ]
+    }
   },
   "corroboration": {
     "_comment": "Cross-source clustering is the main 'is this big' signal. Points per additional source carrying the same story.",
@@ -1098,22 +1134,12 @@
     }
   },
   "email": {
-    "_comment": "Newsletter ingestion for sources that block CI (Substack, CSBA, AEI return 403 to datacenter IPs) or have no feed at all (ExchangeMonitor). Read-only IMAP against a dedicated Gmail account. Credentials come from MAIL_USER / MAIL_PASSWORD secrets - Gmail requires an APP PASSWORD with 2FA enabled, not the account password. Match is on the From header, so add a sender entry for each newsletter you subscribe to.",
+    "_comment": "Dedicated Gmail inbox subscribed to newsletters, press-wire alerts and Google Alerts. Claude reads each NEW message once (cached via mail_cache.json on the live site), splits it into separate stories and judges each against semantic.thesis; stories below min_relevance are dropped and logged by title. Read-only IMAP. Secrets: MAIL_USER, MAIL_PASSWORD (a Gmail APP password), MAIL_HOST. Any sender is read; the senders map only sets the display name and weight, and ignore_senders skips account and security mail.",
     "enabled": true,
     "host": "imap.gmail.com",
     "folder": "INBOX",
-    "lookback_days": 8,
-    "max_messages": 120,
-    "skip_link_hosts": [
-      "twitter.com",
-      "x.com",
-      "facebook.com",
-      "linkedin.com",
-      "instagram.com",
-      "youtube.com",
-      "substack.com/profile",
-      "mailchimp.com"
-    ],
+    "lookback_days": 4,
+    "max_messages": 200,
     "senders": {
       "industrialbasealpha": {
         "name": "Industrial Base Alpha",
@@ -1167,8 +1193,61 @@
           "budget",
           "dib"
         ]
+      },
+      "googlealerts-noreply@google.com": {
+        "name": "Google Alert",
+        "kind": "news",
+        "weight": 1.0,
+        "hint": [],
+        "source_from_link": true
+      },
+      "globenewswire": {
+        "name": "GlobeNewswire",
+        "kind": "news",
+        "weight": 1.2,
+        "hint": []
+      },
+      "prnewswire": {
+        "name": "PR Newswire",
+        "kind": "news",
+        "weight": 1.2,
+        "hint": []
+      },
+      "businesswire": {
+        "name": "Business Wire",
+        "kind": "news",
+        "weight": 1.2,
+        "hint": []
+      },
+      "kippsdesanto": {
+        "name": "KippsDeSanto",
+        "kind": "news",
+        "weight": 1.3,
+        "hint": [
+          "deals"
+        ]
+      },
+      "csis.org": {
+        "name": "CSIS",
+        "kind": "analysis",
+        "weight": 1.2,
+        "hint": [
+          "thinktank"
+        ]
       }
-    }
+    },
+    "max_new_messages": 60,
+    "min_relevance": 1,
+    "max_chars": 14000,
+    "max_links": 80,
+    "model": "claude-sonnet-4-6",
+    "default_weight": 1.1,
+    "ignore_senders": [
+      "accounts.google.com",
+      "no-reply@google.com",
+      "googleworkspace",
+      "mail-noreply@google.com"
+    ]
   },
   "edgar": {
     "_comment": "DISABLED. Built for ownership and control events (SC 13D, S-4), which is trading-adjacent intelligence - not the use case. This brief reads companies for demand signal, capacity moves and comps, and filings do not carry those: the IR feeds do. Kept in the codebase in case a filings need emerges; set enabled=true and pick forms. Requires SEC_USER_AGENT.",

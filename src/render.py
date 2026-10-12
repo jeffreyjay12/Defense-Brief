@@ -275,7 +275,18 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
     # LEFT - delta since the previous build
     parts.append('<div class="panel"><h2>What changed <span>since last update</span></h2>')
     if ai_summary:
-        parts.append("<ol>" + "".join(f"<li>{l}</li>" for l in ai_summary) + "</ol>")
+        lis = []
+        for b in ai_summary:
+            if isinstance(b, str):                 # older string-only form
+                lis.append(f"<li>{esc(b)}</li>")
+                continue
+            links = " &middot; ".join(
+                f'<a href="{esc(d["link"])}" target="_blank" rel="noopener" '
+                f'title="{esc(d["title"])}">{esc(d.get("lead_source") or (d.get("sources") or ["source"])[0])}</a>'
+                for d in b.get("refs", []))
+            src = f'<br><span class="lbl">{links}</span>' if links else ""
+            lis.append(f"<li>{esc(b['text'])}{src}</li>")
+        parts.append("<ol>" + "".join(lis) + "</ol>")
     else:
         fresh = [d for d in digest if d["id"] in new_ids][:5]
         if fresh:
@@ -319,8 +330,13 @@ def render(digest, cfg, errors=None, generated=None, ai_summary=None, new_ids=No
             bucket = round(usd / (10 ** mag)) * (10 ** mag) if usd > 0 else 0
             w = _words(d["title"])
             dup = False
-            for seen_bucket, seen_words in deals and [(x[1], x[2]) for x in deals] or []:
-                if seen_bucket == bucket and len(w & seen_words) >= 3:
+            for seen, seen_bucket, seen_words in deals:
+                s_usd = seen.get("usd", 0)
+                # same precise amount (within 2%) and two shared words, or the
+                # same rounded amount and three - see pipeline.cluster
+                precise = usd >= 1e7 and s_usd >= 1e7 and abs(usd - s_usd) / max(usd, s_usd) <= 0.02
+                if (precise and len(w & seen_words) >= 2) or \
+                        (seen_bucket == bucket and len(w & seen_words) >= 3):
                     dup = True
                     break
             if dup:

@@ -60,6 +60,30 @@ def previous_digest():
     return []
 
 
+def previous_mail_cache():
+    """Extraction results from the last build, read back from the live site
+    like digest.json, so each email is sent to the model once, not twice a
+    day for as long as it sits in the lookback window."""
+    import urllib.request
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo and "/" in repo:
+        owner, name = repo.split("/", 1)
+        url = f"https://{owner}.github.io/{name}/mail_cache.json"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "DefenseBrief"})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except Exception as ex:
+            print(f"  email: no previous cache ({type(ex).__name__})")
+    local = PUB / "mail_cache.json"
+    if local.exists():
+        try:
+            return load(local)
+        except Exception:
+            pass
+    return {}
+
+
 def _same_story(a_title, b_title, a_usd, b_usd):
     """Cheap duplicate check for carried items against the fresh digest."""
     import re as _re, math as _m
@@ -176,7 +200,16 @@ def previous_ids():
 
 
 def ai_summary(digest, cfg):
-    """Optional: 3-4 line written summary via Claude. Silent no-op without a key."""
+    """Optional 3-4 bullet 'what changed' summary via Claude, each bullet tied to
+    the stories it draws on. Silent no-op without a key.
+
+    The bullets synthesise across articles - which is the point - but with no
+    links a merged bullet could not be traced back: "DOD issued new memos
+    reshaping contractor profit policy..." combined two Inside Defense items and
+    matched neither headline. The model now cites item numbers, and only
+    numbers that exist in the listing are kept, so a bullet can only point at
+    stories that are actually on the page.
+    """
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key or not digest:
         return None
@@ -184,17 +217,19 @@ def ai_summary(digest, cfg):
         import urllib.request
         top = digest[:14]
         listing = "\n".join(
-            f"- [{cfg['sections'][d['section']]['label']}] {d['title']} ({', '.join(d['sources'][:3])})"
-            for d in top)
+            f"{n+1}. [{cfg['sections'][d['section']]['label']}] {d['title']} ({', '.join(d['sources'][:3])})"
+            for n, d in enumerate(top))
         prompt = (
-            "You are briefing a defense-industrial-base investor. Below are today's top stories.\n"
+            "You are briefing a defense-industrial-base investor. Below are today's top stories, numbered.\n"
             "Write 3-4 single-sentence bullets covering only what genuinely changed - program "
             "decisions, awards, budget moves, supply-chain or capacity news. Skip routine coverage. "
-            "No preamble, no bullet characters, one sentence per line.\n\n" + listing)
+            "A bullet may combine several stories. For each bullet list the numbers of the stories it "
+            "draws on; cite only numbers from the list.\n"
+            'Return ONLY a JSON array: [{"text": "<one sentence>", "refs": [<numbers>]}]\n\n' + listing)
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=json.dumps({
-                "model": "claude-sonnet-4-6", "max_tokens": 400,
+                "model": "claude-sonnet-4-6", "max_tokens": 700,
                 "messages": [{"role": "user", "content": prompt}],
             }).encode(),
             headers={"content-type": "application/json", "x-api-key": key,
@@ -202,8 +237,27 @@ def ai_summary(digest, cfg):
         with urllib.request.urlopen(req, timeout=45) as r:
             body = json.loads(r.read())
         text = "".join(b.get("text", "") for b in body.get("content", []) if b.get("type") == "text")
-        lines = [l.strip(" -•\t") for l in text.splitlines() if l.strip()]
-        return lines[:4] or None
+        import re as _re
+        t = _re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=_re.M).strip()
+        try:
+            rows = json.loads(t)
+        except Exception:
+            m = _re.search(r"\[.*\]", t, _re.S)
+            rows = json.loads(m.group(0)) if m else None
+        out = []
+        for row in rows or []:
+            if not isinstance(row, dict) or not str(row.get("text", "")).strip():
+                continue
+            refs = []
+            for n in row.get("refs") or []:
+                try:
+                    k = int(n) - 1
+                except Exception:
+                    continue
+                if 0 <= k < len(top) and top[k] not in refs:
+                    refs.append(top[k])
+            out.append({"text": str(row["text"]).strip(), "refs": refs})
+        return out[:4] or None
     except Exception as ex:  # noqa: BLE001
         print(f"  (ai summary skipped: {ex})")
         return None
@@ -230,7 +284,9 @@ def main():
         raw, errors = fetch(sources)
         # Newsletters arrive by mail because their sites refuse CI traffic.
         if mailfeed is not None:
-            raw += mailfeed.fetch(cfg)
+            mail_items, mail_cache = mailfeed.fetch(cfg, cache=previous_mail_cache())
+            raw += mail_items
+            (PUB / "mail_cache.json").write_text(json.dumps(mail_cache))
         if edgar is not None:
             raw += edgar.fetch(cfg)
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
