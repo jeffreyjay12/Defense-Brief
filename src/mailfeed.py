@@ -235,7 +235,10 @@ def fetch(cfg, cache=None, log=print):
     min_rel = int(mailcfg.get("min_relevance", 1))
     max_new = int(mailcfg.get("max_new_messages", 60))
     senders = mailcfg.get("senders", {})
-    ignore = [s.lower() for s in mailcfg.get("ignore_senders", [])] + [user.lower()]
+    # Your own address is NOT ignored: everything in the label is there on
+    # purpose, and forwarding a newsletter or release to the +monitor address
+    # is the manual way to feed the brief.
+    ignore = [s.lower() for s in mailcfg.get("ignore_senders", [])]
     sec_keys = {k for k, v in cfg["sections"].items() if isinstance(v, dict) and not k.startswith("_")}
 
     items, kept_cache = [], {}
@@ -309,7 +312,7 @@ def fetch(cfg, cache=None, log=print):
                 # Aggregator mail (Google Alerts) names the publisher in the
                 # link, not the sender: credit the outlet, not "Google Alert".
                 story_src = src
-                if match.get("source_from_link") and r.get("link"):
+                if (match.get("source_from_link") or addr == user.lower()) and r.get("link"):
                     host = urllib.parse.urlparse(r["link"]).netloc.lower()
                     story_src = re.sub(r"^www\.", "", host) or src
                 if not isinstance(r, dict) or not str(r.get("title", "")).strip():
