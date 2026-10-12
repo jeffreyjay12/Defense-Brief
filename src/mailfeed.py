@@ -181,6 +181,9 @@ Rules:
   headline in your words. Never invent facts not in the email.
 - link: the L-number of the link that goes to that story, or null if none does.
   Use only L-numbers from the table.
+- publisher: the outlet or organisation that originally published the story
+  (e.g. "BWXT", "Breaking Defense", "NNSA"). For forwarded mail this is the
+  original sender, not the person forwarding. null if unclear.
 - summary: one or two sentences in your own words, facts from the email only.
   Include dollar amounts exactly as stated.
 - kind: "news" for events, awards, deals, filings and announcements; "analysis"
@@ -192,7 +195,7 @@ Sections:
 {guide}
 
 Return ONLY a JSON array:
-[{{"title":"...","link":"L3","summary":"...","kind":"news","relevance":2,"section":"dib"}}]
+[{{"title":"...","link":"L3","publisher":"...","summary":"...","kind":"news","relevance":2,"section":"dib"}}]
 
 From: {sender}
 Subject: {subject}
@@ -312,9 +315,10 @@ def fetch(cfg, cache=None, log=print):
                 # Aggregator mail (Google Alerts) names the publisher in the
                 # link, not the sender: credit the outlet, not "Google Alert".
                 story_src = src
-                if (match.get("source_from_link") or addr == user.lower()) and r.get("link"):
-                    host = urllib.parse.urlparse(r["link"]).netloc.lower()
-                    story_src = re.sub(r"^www\.", "", host) or src
+                if match.get("source_from_link") or addr == user.lower():
+                    pub = str(r.get("publisher") or "").strip()
+                    host = urllib.parse.urlparse(r.get("link") or "").netloc.lower()
+                    story_src = pub or re.sub(r"^www\.", "", host) or src
                 if not isinstance(r, dict) or not str(r.get("title", "")).strip():
                     continue
                 stats["stories"] += 1
@@ -329,7 +333,10 @@ def fetch(cfg, cache=None, log=print):
                 items.append({
                     "id": None,
                     "title": str(r["title"]).strip()[:220],
-                    "link": r.get("link") or "",
+                    # No usable link (often a forward that lost it): a search
+                    # for the headline beats a dead click.
+                    "link": r.get("link") or ("https://www.google.com/search?q="
+                                              + urllib.parse.quote_plus(str(r["title"]).strip())),
                     "summary": str(r.get("summary") or "").strip()[:400],
                     "source": story_src,
                     "kind": r.get("kind") if r.get("kind") in ("news", "analysis") else match.get("kind", "news"),
