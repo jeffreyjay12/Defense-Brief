@@ -84,8 +84,6 @@ section{margin:22px 0}
 section[data-sec="triad"] .sh{border-color:#7aa7e8}
 section[data-sec="dib"]   .sh{border-color:#7bc48a}
 section[data-sec="budget"] .sh{border-color:#c9a227}
-section[data-sec="primes"] .sh{border-color:#c58bd6}
-section[data-sec="deals"] .sh{border-color:#e8894a}
 section[data-sec="nuclear_energy"] .sh{border-color:#5ac8c8}
 section[data-sec="tech"] .sh{border-color:#8f9bb3}
 section[data-sec="global"] .sh{border-color:#d69b7b}
@@ -132,7 +130,7 @@ footer{color:var(--dim);font-size:11.5px;font-family:var(--mono);
 # Analysis sits above Allied because a strategic piece is more likely to change
 # thinking than allied procurement news. Tech and Nuclear Energy are option
 # value and sit last.
-SECTION_ORDER = ["triad", "dib", "deals", "budget",
+SECTION_ORDER = ["triad", "dib", "budget",
                  "thinktank", "global", "tech", "nuclear_energy"]
 
 

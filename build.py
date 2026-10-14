@@ -15,7 +15,7 @@ import argparse, json, os, sys, datetime as dt, pathlib
 ROOT = pathlib.Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from pipeline import fetch, build_digest          # noqa: E402
+from pipeline import fetch, build_digest, route   # noqa: E402
 from semantic import adjudicate                  # noqa: E402
 import market                                    # noqa: E402
 try:
@@ -140,6 +140,7 @@ def carry_forward(digest, prev, cfg):
     floor = cf.get("min_score", 2.0)
     cap = cf.get("max_items", 45)
     have = {d["id"] for d in digest}
+    valid = {k for k, v in cfg["sections"].items() if isinstance(v, dict) and not k.startswith("_")}
     kept = 0
     # highest-value first, so the cap keeps what matters
     prev = sorted(prev, key=lambda x: x.get("score_raw", 0), reverse=True)
@@ -175,6 +176,13 @@ def carry_forward(digest, prev, cfg):
         p["score"] = new_score
         p["age_days"] = round(age, 2)
         p["carried"] = True
+        # an item published under a section that has since been retired
+        # (primes, deals) is re-routed by subject rather than dropped
+        if p.get("section") not in valid:
+            p["section"] = route({"items": [{
+                "title": p.get("title", ""), "summary": p.get("summary", ""),
+                "kind": "analysis" if p.get("is_analysis") else "news", "hint": []}]}, cfg)
+            p["why"] = (p.get("why") or []) + [f"re-routed to {p['section']} (section retired)"]
         digest.append(p)
         kept += 1
     if kept:
