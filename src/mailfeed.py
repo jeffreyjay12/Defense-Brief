@@ -86,6 +86,30 @@ def _unwrap(url):
     return url
 
 
+# Query parameters that identify the subscriber. Newsletter links are personal:
+# a Substack email link can carry a signed token tied to the reader's account.
+# The page and mail_cache.json are public, so these never leave the build.
+_PERSONAL = {"token", "r", "isfreemail", "utm_source", "utm_medium", "utm_campaign",
+             "utm_content", "utm_term", "mc_cid", "mc_eid", "triedredirect"}
+
+
+def _public_link(url):
+    """A link safe to publish: subscriber tokens and tracking stripped, and
+    Substack app links rewritten to the post's public address."""
+    try:
+        p = urllib.parse.urlparse(url or "")
+        if not p.scheme.startswith("http"):
+            return url
+        q = urllib.parse.parse_qs(p.query)
+        if p.netloc.endswith("substack.com") and p.path.startswith("/app-link/post") and q.get("post_id"):
+            return f"https://substack.com/home/post/p-{q['post_id'][0]}"
+        kept = [(k, v) for k, v in urllib.parse.parse_qsl(p.query, keep_blank_values=True)
+                if k.lower() not in _PERSONAL]
+        return urllib.parse.urlunparse(p._replace(query=urllib.parse.urlencode(kept), fragment=""))
+    except Exception:
+        return url
+
+
 def _to_text(plain, html, max_chars, max_links):
     """Readable text with numbered links: 'Headline [L3]' plus a link table.
     The model picks link numbers, so it can only cite URLs that are really in
@@ -306,7 +330,10 @@ def fetch(cfg, cache=None, log=print):
                 for r in rows:                   # resolve L-numbers now, cache final URLs
                     ln = str(r.get("link") or "")
                     m = re.fullmatch(r"L?(\d+)", ln.strip())
-                    r["link"] = links[int(m.group(1)) - 1] if m and 0 < int(m.group(1)) <= len(links) else ""
+                    r["link"] = _public_link(links[int(m.group(1)) - 1]) if m and 0 < int(m.group(1)) <= len(links) else ""
+            for r in rows if isinstance(rows, list) else []:   # older cache entries too
+                if isinstance(r, dict) and r.get("link"):
+                    r["link"] = _public_link(r["link"])
             kept_cache[key] = {"rows": rows, "date": when.isoformat()}
 
             match = next((v for k, v in senders.items() if k.lower() in addr or k.lower() in frm.lower()), {})
@@ -335,7 +362,7 @@ def fetch(cfg, cache=None, log=print):
                     "title": str(r["title"]).strip()[:220],
                     # No usable link (often a forward that lost it): a search
                     # for the headline beats a dead click.
-                    "link": r.get("link") or ("https://www.google.com/search?q="
+                    "link": _public_link(r.get("link")) or ("https://www.google.com/search?q="
                                               + urllib.parse.quote_plus(str(r["title"]).strip())),
                     "summary": str(r.get("summary") or "").strip()[:400],
                     "source": story_src,
