@@ -35,6 +35,7 @@ jobs:
           MAIL_USER: ${{ secrets.MAIL_USER }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
         run: python build.py
       - uses: actions/upload-pages-artifact@v3
         with:

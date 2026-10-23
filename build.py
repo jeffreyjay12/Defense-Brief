@@ -30,6 +30,10 @@ try:
     import weekly                                 # optional: weekly compilation
 except ImportError:
     weekly = None
+try:
+    import earnings                               # optional: quarterly earnings releases
+except ImportError:
+    earnings = None
 from render import render, MANIFEST, ICON         # noqa: E402
 
 DATA = ROOT / "data"
@@ -311,6 +315,17 @@ def main():
             (PUB / "mail_cache.json").write_text(json.dumps(mail_cache))
         if edgar is not None:
             raw += edgar.fetch(cfg)
+        # Earnings releases. The scorecard lives on the site, so a build that
+        # could not read it must not publish an empty one in its place.
+        if earnings is not None and weekly is not None:
+            try:
+                prev_earn = weekly.remote_json("earnings.json", {}, PUB)
+            except weekly.HistoryUnavailable as ex:
+                print(f"earnings: {ex}")
+                sys.exit(1)
+            earn_items, earn_state = earnings.fetch(cfg, prev_earn)
+            raw += earn_items
+            (PUB / "earnings.json").write_text(json.dumps(earn_state, indent=1))
         (DATA / "raw.json").write_text(json.dumps(raw, indent=1))
 
     prev = previous_digest()

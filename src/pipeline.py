@@ -490,7 +490,12 @@ def cluster(items, min_shared=3, overlap=0.40, tight_overlap=0.50):
                              "usd": it["_usd"], "when": _when(it)})
             continue
         placed = False
+        key = it.get("cluster_key")
         for c in clusters:
+            # items a module has keyed (one company's earnings release) never
+            # merge with a differently keyed item, however alike the wording
+            if key and any(x.get("cluster_key") not in (None, key) for x in c["items"]):
+                continue
             seed = c["seed"] or c["tokens"]
             if same_award(it, c):
                 c["items"].append(it)
@@ -703,6 +708,10 @@ def build_digest(items, cfg, now=None):
         locked = (bool(tier1_hits(blob_l, cfg))
                   and cfg.get("routing", {}).get("lock_tier1_to_triad", True)
                   and not is_analysis_cluster)
+        # A source module can pin its items to a section (earnings releases
+        # belong in DIB even when they mention Sentinel or Columbia).
+        forced = next((i["force_section"] for i in c["items"]
+                       if i.get("force_section") in cfg["sections"]), None)
         aw = cfg.get("awards_strip", {})
         not_award = hits(blob_l, aw.get("exclude_terms", []))
         is_award = (bool(aw.get("enabled"))
@@ -714,7 +723,7 @@ def build_digest(items, cfg, now=None):
             "provenance": provenance(lead["source"], lead.get("link", "")),
             "bids": bid_density(blob_full),
             "is_award": is_award,
-            "_locked": locked,
+            "_locked": locked or bool(forced),
             "id": slug(lead["link"] or lead["title"]),
             "title": lead["title"],
             "link": lead["link"],
@@ -722,7 +731,7 @@ def build_digest(items, cfg, now=None):
             "lead_source": lead["source"],
             "sources": sorted({i["source"] for i in c["items"]}),
             "published": lead["published"],
-            "section": "triad" if locked else route(c, cfg),
+            "section": forced or ("triad" if locked else route(c, cfg)),
             **sc,
         })
     out.sort(key=lambda x: x["score"], reverse=True)
