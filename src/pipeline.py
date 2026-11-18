@@ -562,9 +562,11 @@ def score_cluster(c, cfg, now=None):
         total += pts
         why.append(f"{distinct} sources +{pts}")
 
-    # dollar magnitude
+    # dollar magnitude - news only. In analysis a dollar figure is context
+    # ("DoD obligates $450B a year"), not the size of an event, and scoring
+    # it gave an essay the same +10 as a $10B award.
     usd = parse_dollars(blob)
-    if usd > 0:
+    if usd > 0 and not is_analysis:
         dp = cfg["magnitude"]["dollar_points"]
         pts = 0
         for k in sorted(dp, key=lambda x: float(x)):
@@ -714,7 +716,10 @@ def build_digest(items, cfg, now=None):
                        if i.get("force_section") in cfg["sections"]), None)
         aw = cfg.get("awards_strip", {})
         not_award = hits(blob_l, aw.get("exclude_terms", []))
+        # Awards are events: an essay that mentions contracts and a dollar
+        # figure is not one, so all-analysis clusters never qualify.
         is_award = (bool(aw.get("enabled"))
+                    and not is_analysis_cluster
                     and bool(hits(blob_l, aw.get("terms", [])))
                     and not not_award
                     and sc["usd"] >= aw.get("min_usd", 1e6))
